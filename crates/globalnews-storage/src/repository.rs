@@ -276,6 +276,67 @@ impl Repository {
     }
 
     // -------------------------------------------------------------------------
+    // Event Relationships CRUD
+    // -------------------------------------------------------------------------
+    pub fn insert_relationship(
+        conn: &Connection,
+        rel: &EventRelationship,
+    ) -> Result<(), StorageError> {
+        rel.validate()?;
+        conn.execute(
+            "INSERT INTO event_relationships (source_event_id, target_event_id, relationship_type, description)
+             VALUES (?1, ?2, ?3, ?4)
+             ON CONFLICT(source_event_id, target_event_id, relationship_type) DO UPDATE SET
+                 description = excluded.description;",
+            params![
+                rel.source_event_id,
+                rel.target_event_id,
+                serde_json::to_string(&rel.relationship_type).unwrap().trim_matches('"'),
+                rel.description,
+            ],
+        )?;
+        Ok(())
+    }
+
+    pub fn get_relationships_for_event(
+        conn: &Connection,
+        event_id: &str,
+    ) -> Result<Vec<EventRelationship>, StorageError> {
+        let mut stmt = conn.prepare(
+            "SELECT source_event_id, target_event_id, relationship_type, description
+             FROM event_relationships
+             WHERE source_event_id = ?1 OR target_event_id = ?1;",
+        )?;
+
+        let rows = stmt.query_map(params![event_id], |row| {
+            let rel_str: String = row.get(2)?;
+            let rel_type: RelationType = serde_json::from_str(&format!("\"{}\"", rel_str))
+                .map_err(|e| rusqlite::Error::FromSqlConversionFailure(2, rusqlite::types::Type::Text, Box::new(e)))?;
+
+            Ok(EventRelationship {
+                source_event_id: row.get(0)?,
+                target_event_id: row.get(1)?,
+                relationship_type: rel_type,
+                description: row.get(3)?,
+            })
+        })?;
+
+        let mut list = Vec::new();
+        for r in rows {
+            list.push(r?);
+        }
+        Ok(list)
+    }
+
+    pub fn delete_micro_event(conn: &Connection, id: &str) -> Result<bool, StorageError> {
+        let rows_affected = conn.execute(
+            "DELETE FROM micro_events WHERE id = ?1;",
+            params![id],
+        )?;
+        Ok(rows_affected > 0)
+    }
+
+    // -------------------------------------------------------------------------
     // Full-Text Search (FTS5 BM25 Ranking)
     // -------------------------------------------------------------------------
     pub fn search_events(

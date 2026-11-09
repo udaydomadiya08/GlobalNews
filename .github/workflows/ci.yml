@@ -1,0 +1,129 @@
+name: GlobalNews CI Verification
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # 1. Code Formatting & Linting Gate
+  # ---------------------------------------------------------------------------
+  lint:
+    name: Rustfmt & Clippy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust Stable (pinned)
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Check Code Formatting
+        run: cargo fmt --all -- --check
+
+      - name: Workspace Clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+  # ---------------------------------------------------------------------------
+  # 2. Multiplatform Native Build & Test Matrix
+  # ---------------------------------------------------------------------------
+  test-matrix:
+    name: Test (${{ matrix.platform.name }})
+    needs: lint
+    runs-on: ${{ matrix.platform.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - name: macOS Apple Silicon (arm64)
+            os: macos-14
+            target: aarch64-apple-darwin
+          - name: Windows x64 (MSVC)
+            os: windows-latest
+            target: x86_64-pc-windows-msvc
+          - name: Linux x64 (GNU)
+            os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Linux system dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libssl-dev
+
+      - name: Install Rust Stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.platform.target }}
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Workspace Type Check
+        run: cargo check --workspace --target ${{ matrix.platform.target }}
+
+      - name: Execute Workspace Test Suite
+        run: cargo test --workspace --target ${{ matrix.platform.target }} --verbose -- --nocapture
+
+  # ---------------------------------------------------------------------------
+  # 3. Frontend & Tauri Shell Verification
+  # ---------------------------------------------------------------------------
+  frontend-verification:
+    name: Frontend Shell Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: crates/globalnews-app/package-lock.json
+
+      - name: Install Frontend Dependencies
+        working-directory: crates/globalnews-app
+        run: npm ci || npm install
+
+      - name: Frontend Production Build
+        working-directory: crates/globalnews-app
+        run: npm run build
+
+  # ---------------------------------------------------------------------------
+  # 4. Dependency Security & Licence Audit
+  # ---------------------------------------------------------------------------
+  security-audit:
+    name: Security & Licence Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust Stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Generate Cargo.lock
+        run: cargo generate-lockfile
+
+      - name: Install cargo-audit
+        run: cargo install cargo-audit --locked
+
+      - name: Run Security Vulnerability Audit
+        run: cargo audit

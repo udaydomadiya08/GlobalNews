@@ -25,6 +25,7 @@ pub struct HealthResponse {
     pub database_active: bool,
 }
 
+#[allow(dead_code)]
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct EventFilter {
     pub min_importance: Option<f64>,
@@ -40,6 +41,7 @@ pub struct SearchResult {
     pub rank: f64,
 }
 
+#[allow(dead_code)]
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct StorageStats {
     pub current_version: i32,
