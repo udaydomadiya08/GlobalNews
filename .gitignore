@@ -1,0 +1,37 @@
+# Rust build artifacts
+target/
+**/*.rs.bk
+*.pdb
+
+# Node / Frontend artifacts
+node_modules/
+dist/
+.vite/
+.turbo/
+
+# SQLite & Database runtime files
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+
+# Operating System files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE & Editor configs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment & Logs
+*.log
+.env
+.env.local

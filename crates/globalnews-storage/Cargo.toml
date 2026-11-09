@@ -1,0 +1,20 @@
+[package]
+name = "globalnews-storage"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+description = "SQLite persistence, migration engine, and FTS5 search for GlobalNews"
+
+[dependencies]
+globalnews-contracts = { workspace = true }
+rusqlite = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
+tokio = { workspace = true }
+
+[dev-dependencies]
+tempfile = "3.12"

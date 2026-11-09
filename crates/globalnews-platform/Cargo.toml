@@ -1,0 +1,14 @@
+[package]
+name = "globalnews-platform"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+description = "Platform-specific abstractions and integration boundaries for GlobalNews"
+
+[dependencies]
+globalnews-contracts = { workspace = true }
+globalnews-storage = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }

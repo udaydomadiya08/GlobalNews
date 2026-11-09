@@ -1,0 +1,23 @@
+[package]
+name = "globalnews-app"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+description = "Tauri 2 application shell and native IPC boundary for GlobalNews"
+
+[dependencies]
+globalnews-contracts = { workspace = true }
+globalnews-storage = { workspace = true }
+globalnews-core = { workspace = true }
+globalnews-platform = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+tokio = { workspace = true }
+
+[build-dependencies]
+# Standard build dependencies for Tauri applications

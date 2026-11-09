@@ -1,0 +1,42 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/globalnews-contracts",
+    "crates/globalnews-storage",
+    "crates/globalnews-core",
+    "crates/globalnews-platform",
+    "crates/globalnews-app/src-tauri",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["GlobalNews Architecture Team"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/globalnews/globalnews"
+rust-version = "1.75.0"
+
+[workspace.dependencies]
+# Internal workspace crates
+globalnews-contracts = { path = "crates/globalnews-contracts", version = "0.1.0" }
+globalnews-storage = { path = "crates/globalnews-storage", version = "0.1.0" }
+globalnews-core = { path = "crates/globalnews-core", version = "0.1.0" }
+globalnews-platform = { path = "crates/globalnews-platform", version = "0.1.0" }
+
+# Serialization & Core Data
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1.10", features = ["v4", "serde"] }
+
+# SQLite & Persistence
+rusqlite = { version = "0.32", features = ["bundled", "modern_sqlite"] }
+
+# Error & Logging
+thiserror = "1.0"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
+
+# Asynchronous Runtime & Low-Level
+tokio = { version = "1.40", features = ["rt-multi-thread", "sync", "macros", "time"] }
+libc = "0.2"
