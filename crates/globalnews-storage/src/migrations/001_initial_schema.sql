@@ -29,9 +29,22 @@ CREATE TABLE IF NOT EXISTS micro_events (
     summary TEXT NOT NULL,
     category_code TEXT NOT NULL,
     importance_score REAL NOT NULL,
+    domain_severity REAL NOT NULL DEFAULT 1.0,
+    geographic_reach REAL NOT NULL DEFAULT 1.0,
+    physical_impact REAL NOT NULL DEFAULT 0.0,
+    volume_dampener REAL NOT NULL DEFAULT 1.0,
     confidence_score REAL NOT NULL,
+    independent_source_count INTEGER NOT NULL DEFAULT 1,
+    jurisdictional_diversity REAL NOT NULL DEFAULT 0.0,
+    has_sensor_validation INTEGER NOT NULL DEFAULT 0,
+    is_disputed INTEGER NOT NULL DEFAULT 0,
     latitude REAL NOT NULL,
     longitude REAL NOT NULL,
+    altitude_m REAL,
+    toponym_name TEXT NOT NULL DEFAULT '',
+    geonames_id INTEGER,
+    country_code TEXT NOT NULL DEFAULT 'XX',
+    admin1_code TEXT,
     uncertainty_radius_km REAL NOT NULL DEFAULT 10.0,
     status TEXT NOT NULL,
     first_seen_at TEXT NOT NULL,
@@ -115,6 +128,20 @@ CREATE VIRTUAL TABLE IF NOT EXISTS fts_events USING fts5(
     content_rowid='rowid'
 );
 
+-- FTS5 Synchronization Triggers for micro_events
+CREATE TRIGGER IF NOT EXISTS micro_events_ai AFTER INSERT ON micro_events BEGIN
+    INSERT INTO fts_events(rowid, title, summary) VALUES (new.rowid, new.title, new.summary);
+END;
+
+CREATE TRIGGER IF NOT EXISTS micro_events_ad AFTER DELETE ON micro_events BEGIN
+    INSERT INTO fts_events(fts_events, rowid, title, summary) VALUES('delete', old.rowid, old.title, old.summary);
+END;
+
+CREATE TRIGGER IF NOT EXISTS micro_events_au AFTER UPDATE ON micro_events BEGIN
+    INSERT INTO fts_events(fts_events, rowid, title, summary) VALUES('delete', old.rowid, old.title, old.summary);
+    INSERT INTO fts_events(rowid, title, summary) VALUES (new.rowid, new.title, new.summary);
+END;
+
 -- Full-Text Search Virtual Table for Articles
 CREATE VIRTUAL TABLE IF NOT EXISTS fts_articles USING fts5(
     title,
@@ -122,3 +149,17 @@ CREATE VIRTUAL TABLE IF NOT EXISTS fts_articles USING fts5(
     content='articles',
     content_rowid='rowid'
 );
+
+-- FTS5 Synchronization Triggers for articles
+CREATE TRIGGER IF NOT EXISTS articles_ai AFTER INSERT ON articles BEGIN
+    INSERT INTO fts_articles(rowid, title, body_excerpt) VALUES (new.rowid, new.title, new.body_excerpt);
+END;
+
+CREATE TRIGGER IF NOT EXISTS articles_ad AFTER DELETE ON articles BEGIN
+    INSERT INTO fts_articles(fts_articles, rowid, title, body_excerpt) VALUES('delete', old.rowid, old.title, old.body_excerpt);
+END;
+
+CREATE TRIGGER IF NOT EXISTS articles_au AFTER UPDATE ON articles BEGIN
+    INSERT INTO fts_articles(fts_articles, rowid, title, body_excerpt) VALUES('delete', old.rowid, old.title, old.body_excerpt);
+    INSERT INTO fts_articles(rowid, title, body_excerpt) VALUES (new.rowid, new.title, new.body_excerpt);
+END;

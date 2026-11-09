@@ -62,6 +62,10 @@ fn test_macro_and_micro_event_crud() {
         assert_eq!(retrieved.title, "Malacca Strait Shipping Advisory");
         assert_eq!(retrieved.status, EventStatus::Developing);
         assert_eq!(retrieved.macro_event_id, Some("macro-001".into()));
+        assert_eq!(retrieved.location.toponym_name, "Port of Singapore");
+        assert_eq!(retrieved.location.country_code, "SG");
+        assert_eq!(retrieved.importance.final_score, importance.final_score);
+        assert_eq!(retrieved.confidence.final_confidence, confidence.final_confidence);
         Ok(())
     })
     .unwrap();

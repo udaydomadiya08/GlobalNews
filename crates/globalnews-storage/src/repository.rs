@@ -78,15 +78,39 @@ impl Repository {
         conn.execute(
             "INSERT INTO micro_events (
                 id, macro_event_id, title, summary, category_code,
-                importance_score, confidence_score, latitude, longitude,
+                importance_score, domain_severity, geographic_reach, physical_impact, volume_dampener,
+                confidence_score, independent_source_count, jurisdictional_diversity, has_sensor_validation, is_disputed,
+                latitude, longitude, altitude_m, toponym_name, geonames_id, country_code, admin1_code,
                 uncertainty_radius_km, status, first_seen_at, last_updated_at, citation_count
-            ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14)
+            ) VALUES (
+                ?1, ?2, ?3, ?4, ?5,
+                ?6, ?7, ?8, ?9, ?10,
+                ?11, ?12, ?13, ?14, ?15,
+                ?16, ?17, ?18, ?19, ?20, ?21, ?22,
+                ?23, ?24, ?25, ?26, ?27
+            )
             ON CONFLICT(id) DO UPDATE SET
                 macro_event_id = excluded.macro_event_id,
                 title = excluded.title,
                 summary = excluded.summary,
                 importance_score = excluded.importance_score,
+                domain_severity = excluded.domain_severity,
+                geographic_reach = excluded.geographic_reach,
+                physical_impact = excluded.physical_impact,
+                volume_dampener = excluded.volume_dampener,
                 confidence_score = excluded.confidence_score,
+                independent_source_count = excluded.independent_source_count,
+                jurisdictional_diversity = excluded.jurisdictional_diversity,
+                has_sensor_validation = excluded.has_sensor_validation,
+                is_disputed = excluded.is_disputed,
+                latitude = excluded.latitude,
+                longitude = excluded.longitude,
+                altitude_m = excluded.altitude_m,
+                toponym_name = excluded.toponym_name,
+                geonames_id = excluded.geonames_id,
+                country_code = excluded.country_code,
+                admin1_code = excluded.admin1_code,
+                uncertainty_radius_km = excluded.uncertainty_radius_km,
                 status = excluded.status,
                 last_updated_at = excluded.last_updated_at,
                 citation_count = excluded.citation_count;",
@@ -97,22 +121,28 @@ impl Repository {
                 event.summary,
                 event.category_code,
                 event.importance.final_score,
+                event.importance.domain_severity,
+                event.importance.geographic_reach,
+                event.importance.physical_impact,
+                event.importance.volume_dampener,
                 event.confidence.final_confidence,
+                event.confidence.independent_source_count,
+                event.confidence.jurisdictional_diversity,
+                if event.confidence.has_sensor_validation { 1 } else { 0 },
+                if event.confidence.is_disputed { 1 } else { 0 },
                 event.location.latitude,
                 event.location.longitude,
+                event.location.altitude_m,
+                event.location.toponym_name,
+                event.location.geonames_id,
+                event.location.country_code,
+                event.location.admin1_code,
                 event.location.uncertainty_radius_km,
                 serde_json::to_string(&event.status).unwrap().trim_matches('"'),
                 event.first_seen_at,
                 event.last_updated_at,
                 event.citation_count,
             ],
-        )?;
-
-        // Update FTS5 virtual index
-        conn.execute(
-            "INSERT INTO fts_events(rowid, title, summary)
-             SELECT rowid, title, summary FROM micro_events WHERE id = ?1;",
-            params![event.id],
         )?;
 
         Ok(())
@@ -124,48 +154,47 @@ impl Repository {
     ) -> Result<Option<MicroEvent>, StorageError> {
         let mut stmt = conn.prepare(
             "SELECT id, macro_event_id, title, summary, category_code,
-                    importance_score, confidence_score, latitude, longitude,
+                    importance_score, domain_severity, geographic_reach, physical_impact, volume_dampener,
+                    confidence_score, independent_source_count, jurisdictional_diversity, has_sensor_validation, is_disputed,
+                    latitude, longitude, altitude_m, toponym_name, geonames_id, country_code, admin1_code,
                     uncertainty_radius_km, status, first_seen_at, last_updated_at, citation_count
              FROM micro_events WHERE id = ?1;",
         )?;
 
         let event = stmt
             .query_row(params![id], |row| {
-                let status_str: String = row.get(10)?;
+                let status_str: String = row.get(23)?;
                 let status: EventStatus = serde_json::from_str(&format!("\"{}\"", status_str))
-                    .map_err(|e| rusqlite::Error::FromSqlConversionFailure(10, rusqlite::types::Type::Text, Box::new(e)))?;
-
-                let importance_val: f64 = row.get(5)?;
-                let confidence_val: f64 = row.get(6)?;
-                let lat: f64 = row.get(7)?;
-                let lon: f64 = row.get(8)?;
-                let uncertainty: f64 = row.get(9)?;
-
-                let location = GeographicLocation {
-                    latitude: lat,
-                    longitude: lon,
-                    altitude_m: None,
-                    toponym_name: "Resolved Coordinate".into(),
-                    geonames_id: None,
-                    country_code: "XX".into(),
-                    admin1_code: None,
-                    uncertainty_radius_km: uncertainty,
-                };
+                    .map_err(|e| rusqlite::Error::FromSqlConversionFailure(23, rusqlite::types::Type::Text, Box::new(e)))?;
 
                 let importance = ImportanceScore {
-                    final_score: importance_val,
-                    domain_severity: importance_val,
-                    geographic_reach: 5.0,
-                    physical_impact: 5.0,
-                    volume_dampener: 1.0,
+                    final_score: row.get(5)?,
+                    domain_severity: row.get(6)?,
+                    geographic_reach: row.get(7)?,
+                    physical_impact: row.get(8)?,
+                    volume_dampener: row.get(9)?,
                 };
 
+                let has_sensor_val: i32 = row.get(13)?;
+                let is_disputed_val: i32 = row.get(14)?;
+
                 let confidence = ConfidenceScore {
-                    final_confidence: confidence_val,
-                    independent_source_count: 1,
-                    jurisdictional_diversity: 0.5,
-                    has_sensor_validation: false,
-                    is_disputed: false,
+                    final_confidence: row.get(10)?,
+                    independent_source_count: row.get(11)?,
+                    jurisdictional_diversity: row.get(12)?,
+                    has_sensor_validation: has_sensor_val != 0,
+                    is_disputed: is_disputed_val != 0,
+                };
+
+                let location = GeographicLocation {
+                    latitude: row.get(15)?,
+                    longitude: row.get(16)?,
+                    altitude_m: row.get(17)?,
+                    toponym_name: row.get(18)?,
+                    geonames_id: row.get(19)?,
+                    country_code: row.get(20)?,
+                    admin1_code: row.get(21)?,
+                    uncertainty_radius_km: row.get(22)?,
                 };
 
                 Ok(MicroEvent {
@@ -178,9 +207,9 @@ impl Repository {
                     confidence,
                     location,
                     status,
-                    first_seen_at: row.get(11)?,
-                    last_updated_at: row.get(12)?,
-                    citation_count: row.get(13)?,
+                    first_seen_at: row.get(24)?,
+                    last_updated_at: row.get(25)?,
+                    citation_count: row.get(26)?,
                 })
             })
             .optional()?;
@@ -212,13 +241,6 @@ impl Repository {
                 article.ingested_at,
                 if article.is_syndicated { 1 } else { 0 },
             ],
-        )?;
-
-        // Update FTS5 index for articles
-        conn.execute(
-            "INSERT INTO fts_articles(rowid, title, body_excerpt)
-             SELECT rowid, title, body_excerpt FROM articles WHERE id = ?1;",
-            params![article.id],
         )?;
 
         Ok(())

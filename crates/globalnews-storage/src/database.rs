@@ -19,6 +19,8 @@ impl Default for DatabaseConfig {
     }
 }
 
+const SHARED_IN_MEMORY_URI: &str = "file:globalnews_mem?mode=memory&cache=shared";
+
 pub struct DatabaseManager {
     config: DatabaseConfig,
     // Dedicated mutex-guarded write connection ensuring single-writer serialization
@@ -34,7 +36,12 @@ impl DatabaseManager {
                 }
                 Connection::open(path)?
             }
-            None => Connection::open_in_memory()?,
+            None => Connection::open_with_flags(
+                SHARED_IN_MEMORY_URI,
+                rusqlite::OpenFlags::SQLITE_OPEN_URI
+                    | rusqlite::OpenFlags::SQLITE_OPEN_READ_WRITE
+                    | rusqlite::OpenFlags::SQLITE_OPEN_CREATE,
+            )?,
         };
 
         Self::configure_pragmas(&mut conn, config.busy_timeout_ms)?;
@@ -84,13 +91,23 @@ impl DatabaseManager {
                 rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY
                     | rusqlite::OpenFlags::SQLITE_OPEN_NO_MUTEX,
             )?,
-            None => {
-                // For in-memory, SQLite cannot share across connections unless URI is used.
-                // Fall back to opening a read-write connection to the same in-memory DB or sharing lock.
-                Connection::open_in_memory()?
-            }
+            None => Connection::open_with_flags(
+                SHARED_IN_MEMORY_URI,
+                rusqlite::OpenFlags::SQLITE_OPEN_URI
+                    | rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY
+                    | rusqlite::OpenFlags::SQLITE_OPEN_NO_MUTEX,
+            )?,
         };
         conn.busy_timeout(std::time::Duration::from_millis(self.config.busy_timeout_ms))?;
         Ok(conn)
+    }
+
+    /// Executes a read operation on a dedicated read connection.
+    pub fn with_reader<F, R>(&self, f: F) -> Result<R, StorageError>
+    where
+        F: FnOnce(&Connection) -> Result<R, StorageError>,
+    {
+        let conn = self.create_reader()?;
+        f(&conn)
     }
 }
