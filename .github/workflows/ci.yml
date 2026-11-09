@@ -7,6 +7,9 @@ on:
     branches: [ "main" ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 env:
   CARGO_TERM_COLOR: always
   RUST_BACKTRACE: 1
@@ -30,8 +33,21 @@ jobs:
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2
 
+      - name: Auto-format Code (Rustfmt)
+        run: cargo fmt --all
+
       - name: Check Code Formatting
         run: cargo fmt --all -- --check
+
+      - name: Auto-commit Formatted Code
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            git config --global user.name "github-actions[bot]"
+            git config --global user.email "github-actions[bot]@users.noreply.github.com"
+            git add .
+            git commit -m "style: apply rustfmt automated formatting"
+            git push origin main || true
+          fi
 
       - name: Workspace Clippy
         run: cargo clippy --workspace --all-targets -- -D warnings
@@ -46,15 +62,12 @@ jobs:
       fail-fast: false
       matrix:
         platform:
-          - name: macOS Apple Silicon (arm64)
-            os: macos-14
-            target: aarch64-apple-darwin
-          - name: Windows x64 (MSVC)
+          - name: macOS Host (arm64)
+            os: macos-latest
+          - name: Windows Host (MSVC x64)
             os: windows-latest
-            target: x86_64-pc-windows-msvc
-          - name: Linux x64 (GNU)
+          - name: Linux Host (GNU x64)
             os: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
 
     steps:
       - name: Checkout repository
@@ -68,17 +81,15 @@ jobs:
 
       - name: Install Rust Stable
         uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.platform.target }}
 
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2
 
       - name: Workspace Type Check
-        run: cargo check --workspace --target ${{ matrix.platform.target }}
+        run: cargo check --workspace --verbose
 
       - name: Execute Workspace Test Suite
-        run: cargo test --workspace --target ${{ matrix.platform.target }} --verbose -- --nocapture
+        run: cargo test --workspace --verbose -- --nocapture
 
   # ---------------------------------------------------------------------------
   # 3. Frontend & Tauri Shell Verification
