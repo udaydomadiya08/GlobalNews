@@ -1,0 +1,7 @@
+[1m[92m    Updating[0m crates.io index
+[1m[92m    Checking[0m globalnews-contracts v0.1.0 (/home/runner/work/GlobalNews/GlobalNews/crates/globalnews-contracts)
+[1m[92m    Checking[0m globalnews-storage v0.1.0 (/home/runner/work/GlobalNews/GlobalNews/crates/globalnews-storage)
+[1m[92m    Checking[0m globalnews-platform v0.1.0 (/home/runner/work/GlobalNews/GlobalNews/crates/globalnews-platform)
+[1m[92m    Checking[0m globalnews-core v0.1.0 (/home/runner/work/GlobalNews/GlobalNews/crates/globalnews-core)
+[1m[92m    Checking[0m globalnews-app v0.1.0 (/home/runner/work/GlobalNews/GlobalNews/crates/globalnews-app/src-tauri)
+[1m[92m    Finished[0m `dev` profile [unoptimized + debuginfo] target(s) in 2.06s
