@@ -102,6 +102,19 @@ impl HttpTransport for MockHttpTransport {
                 }
             }
 
+            if resp.status_code == 429 {
+                return Err(IngestionError::RateLimited {
+                    retry_after_secs: resp.retry_after_secs,
+                });
+            }
+
+            if resp.status_code >= 400 {
+                return Err(IngestionError::HttpStatus {
+                    status: resp.status_code,
+                    message: format!("HTTP error {} on {}", resp.status_code, req.url),
+                });
+            }
+
             Ok(resp.clone())
         } else {
             Err(IngestionError::HttpStatus {

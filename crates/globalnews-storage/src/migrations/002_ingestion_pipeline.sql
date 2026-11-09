@@ -90,13 +90,16 @@ CREATE INDEX IF NOT EXISTS idx_norm_articles_retrieved ON normalized_articles (r
 
 -- 6. Deduplication Fingerprints
 CREATE TABLE IF NOT EXISTS article_fingerprints (
-    fingerprint_hash TEXT PRIMARY KEY,
+    fingerprint_hash TEXT NOT NULL,
     hash_type TEXT NOT NULL,
     article_id TEXT NOT NULL REFERENCES normalized_articles(id) ON DELETE CASCADE,
     source_id TEXT NOT NULL REFERENCES sources(id) ON DELETE CASCADE,
-    first_seen_at TEXT NOT NULL
+    first_seen_at TEXT NOT NULL,
+    PRIMARY KEY (fingerprint_hash, article_id)
 );
 
+CREATE INDEX IF NOT EXISTS idx_article_fingerprints_hash ON article_fingerprints (fingerprint_hash);
+CREATE INDEX IF NOT EXISTS idx_article_fingerprints_lookup ON article_fingerprints (fingerprint_hash, hash_type, source_id);
 CREATE INDEX IF NOT EXISTS idx_article_fingerprints_article ON article_fingerprints (article_id);
 CREATE INDEX IF NOT EXISTS idx_article_fingerprints_source ON article_fingerprints (source_id);
 

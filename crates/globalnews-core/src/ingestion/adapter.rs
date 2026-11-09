@@ -51,6 +51,7 @@ impl FeedAdapter for Rss2Adapter {
         let mut current_item = RawFeedItem::default();
         let mut current_tag = String::new();
         let mut text_buffer = String::new();
+        let mut open_tags: Vec<String> = Vec::new();
 
         let mut buf = Vec::new();
 
@@ -62,7 +63,8 @@ impl FeedAdapter for Rss2Adapter {
                         in_item = true;
                         current_item = RawFeedItem::default();
                     }
-                    current_tag = tag_name;
+                    current_tag = tag_name.clone();
+                    open_tags.push(tag_name);
                     text_buffer.clear();
                 }
                 Ok(Event::Text(ref e)) => {
@@ -80,6 +82,9 @@ impl FeedAdapter for Rss2Adapter {
                 }
                 Ok(Event::End(ref e)) => {
                     let tag_name = String::from_utf8_lossy(e.local_name().as_ref()).to_string();
+                    if let Some(pos) = open_tags.iter().rposition(|t| t.eq_ignore_ascii_case(&tag_name)) {
+                        open_tags.truncate(pos);
+                    }
                     if in_item {
                         let val = text_buffer.trim().to_string();
                         match tag_name.to_ascii_lowercase().as_str() {
@@ -113,7 +118,12 @@ impl FeedAdapter for Rss2Adapter {
                     current_tag.clear();
                     text_buffer.clear();
                 }
-                Ok(Event::Eof) => break,
+                Ok(Event::Eof) => {
+                    if in_item || !open_tags.is_empty() {
+                        return Err(IngestionError::XmlParse("Malformed RSS XML: unclosed tags at EOF".into()));
+                    }
+                    break;
+                }
                 Err(e) => return Err(IngestionError::XmlParse(format!("Malformed RSS XML: {}", e))),
                 _ => {}
             }
@@ -149,6 +159,7 @@ impl FeedAdapter for AtomAdapter {
         let mut current_item = RawFeedItem::default();
         let mut current_tag = String::new();
         let mut text_buffer = String::new();
+        let mut open_tags: Vec<String> = Vec::new();
 
         let mut buf = Vec::new();
 
@@ -160,7 +171,8 @@ impl FeedAdapter for AtomAdapter {
                         in_entry = true;
                         current_item = RawFeedItem::default();
                     }
-                    current_tag = tag_name;
+                    current_tag = tag_name.clone();
+                    open_tags.push(tag_name);
                     text_buffer.clear();
                 }
                 Ok(Event::Empty(ref e)) => {
@@ -204,6 +216,9 @@ impl FeedAdapter for AtomAdapter {
                 }
                 Ok(Event::End(ref e)) => {
                     let tag_name = String::from_utf8_lossy(e.local_name().as_ref()).to_string();
+                    if let Some(pos) = open_tags.iter().rposition(|t| t.eq_ignore_ascii_case(&tag_name)) {
+                        open_tags.truncate(pos);
+                    }
                     if in_entry {
                         let val = text_buffer.trim().to_string();
                         match tag_name.to_ascii_lowercase().as_str() {
@@ -245,7 +260,12 @@ impl FeedAdapter for AtomAdapter {
                     current_tag.clear();
                     text_buffer.clear();
                 }
-                Ok(Event::Eof) => break,
+                Ok(Event::Eof) => {
+                    if in_entry || !open_tags.is_empty() {
+                        return Err(IngestionError::XmlParse("Malformed Atom XML: unclosed tags at EOF".into()));
+                    }
+                    break;
+                }
                 Err(e) => return Err(IngestionError::XmlParse(format!("Malformed Atom XML: {}", e))),
                 _ => {}
             }

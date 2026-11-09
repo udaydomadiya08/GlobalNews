@@ -693,7 +693,7 @@ impl Repository {
         // 1. Check exact canonical URL duplicate
         let existing_canon: Option<String> = tx
             .query_row(
-                "SELECT article_id FROM article_fingerprints WHERE fingerprint_hash = ?1;",
+                "SELECT article_id FROM article_fingerprints WHERE hash_type = 'canonical_url' AND fingerprint_hash = ?1;",
                 params![article.canonical_url_hash],
                 |row| row.get(0),
             )
@@ -709,7 +709,7 @@ impl Repository {
         // 2. Check title+date duplicate for same publisher
         let existing_title_date: Option<String> = tx
             .query_row(
-                "SELECT article_id FROM article_fingerprints WHERE fingerprint_hash = ?1 AND source_id = ?2;",
+                "SELECT article_id FROM article_fingerprints WHERE hash_type = 'title_date' AND fingerprint_hash = ?1 AND source_id = ?2;",
                 params![article.title_date_hash, article.source_id],
                 |row| row.get(0),
             )
