@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 env:
   CARGO_TERM_COLOR: always
@@ -33,24 +33,33 @@ jobs:
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2
 
-      - name: Auto-format Code (Rustfmt)
-        run: cargo fmt --all
-
-      - name: Check Code Formatting
-        run: cargo fmt --all -- --check
-
-      - name: Auto-commit Formatted Code
+      - name: Format Check and Clippy
+        shell: bash
         run: |
-          if [ -n "$(git status --porcelain)" ]; then
-            git config --global user.name "github-actions[bot]"
-            git config --global user.email "github-actions[bot]@users.noreply.github.com"
-            git add .
-            git commit -m "style: apply rustfmt automated formatting"
-            git push origin main || true
+          echo "### Rustfmt & Clippy Results" >> "$GITHUB_STEP_SUMMARY"
+          
+          echo "Running cargo fmt --all -- --check..."
+          FMT_STATUS=0
+          cargo fmt --all -- --check > /tmp/fmt.log 2>&1 || FMT_STATUS=$?
+          
+          echo "Running cargo clippy..."
+          CLIPPY_STATUS=0
+          cargo clippy --workspace --all-targets -- -D warnings > /tmp/clippy.log 2>&1 || CLIPPY_STATUS=$?
+          
+          echo "#### Format Check Output (exit code: $FMT_STATUS)" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          cat /tmp/fmt.log >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          
+          echo "#### Clippy Output (exit code: $CLIPPY_STATUS)" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          cat /tmp/clippy.log >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          
+          if [ $FMT_STATUS -ne 0 ] || [ $CLIPPY_STATUS -ne 0 ]; then
+            echo "Linting failed!"
+            exit 1
           fi
-
-      - name: Workspace Clippy
-        run: cargo clippy --workspace --all-targets -- -D warnings
 
   # ---------------------------------------------------------------------------
   # 2. Multiplatform Native Build & Test Matrix
@@ -85,11 +94,38 @@ jobs:
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2
 
-      - name: Workspace Type Check
-        run: cargo check --workspace --verbose
-
-      - name: Execute Workspace Test Suite
-        run: cargo test --workspace --verbose -- --nocapture
+      - name: Build and Test Workspace
+        shell: bash
+        run: |
+          echo "### Test Matrix: ${{ matrix.platform.name }}" >> "$GITHUB_STEP_SUMMARY"
+          
+          echo "Running cargo check..."
+          CHECK_STATUS=0
+          cargo check --workspace --verbose > /tmp/check.log 2>&1 || CHECK_STATUS=$?
+          
+          echo "#### Cargo Check (exit code: $CHECK_STATUS)" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          tail -n 60 /tmp/check.log >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          
+          if [ $CHECK_STATUS -ne 0 ]; then
+            echo "cargo check failed!"
+            exit $CHECK_STATUS
+          fi
+          
+          echo "Running cargo test..."
+          TEST_STATUS=0
+          cargo test --workspace --verbose -- --nocapture > /tmp/test.log 2>&1 || TEST_STATUS=$?
+          
+          echo "#### Cargo Test (exit code: $TEST_STATUS)" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          tail -n 80 /tmp/test.log >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          
+          if [ $TEST_STATUS -ne 0 ]; then
+            echo "cargo test failed!"
+            exit $TEST_STATUS
+          fi
 
   # ---------------------------------------------------------------------------
   # 3. Frontend & Tauri Shell Verification
