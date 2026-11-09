@@ -1,0 +1,37 @@
+[1m[92m    Checking[0m globalnews-app v0.1.0 (/home/runner/work/GlobalNews/GlobalNews/crates/globalnews-app/src-tauri)
+[1m[91merror[0m[1m: enum `CommandError` is never used[0m
+ [1m[94m--> [0mcrates/globalnews-app/src-tauri/src/commands.rs:8:10
+  [1m[94m|[0m
+[1m[94m8[0m [1m[94m|[0m pub enum CommandError {
+  [1m[94m|[0m          [1m[91m^^^^^^^^^^^^[0m
+  [1m[94m|[0m
+  [1m[94m= [0m[1mnote[0m: `-D dead-code` implied by `-D warnings`
+  [1m[94m= [0m[1mhelp[0m: to override `-D warnings` add `#[expect(dead_code)]` or `#[allow(dead_code)]`
+
+[1m[91merror[0m[1m: struct `SearchResult` is never constructed[0m
+  [1m[94m--> [0mcrates/globalnews-app/src-tauri/src/commands.rs:38:12
+   [1m[94m|[0m
+[1m[94m38[0m [1m[94m|[0m pub struct SearchResult {
+   [1m[94m|[0m            [1m[91m^^^^^^^^^^^^[0m
+
+[1m[91merror[0m[1m: function `handle_search_events` is never used[0m
+  [1m[94m--> [0mcrates/globalnews-app/src-tauri/src/commands.rs:66:8
+   [1m[94m|[0m
+[1m[94m66[0m [1m[94m|[0m pub fn handle_search_events(
+   [1m[94m|[0m        [1m[91m^^^^^^^^^^^^^^^^^^^^[0m
+
+[1m[91merror[0m[1m: function `handle_get_micro_event` is never used[0m
+  [1m[94m--> [0mcrates/globalnews-app/src-tauri/src/commands.rs:96:8
+   [1m[94m|[0m
+[1m[94m96[0m [1m[94m|[0m pub fn handle_get_micro_event(
+   [1m[94m|[0m        [1m[91m^^^^^^^^^^^^^^^^^^^^^^[0m
+
+[1m[91merror[0m[1m: function `handle_get_macro_event` is never used[0m
+   [1m[94m--> [0mcrates/globalnews-app/src-tauri/src/commands.rs:106:8
+    [1m[94m|[0m
+[1m[94m106[0m [1m[94m|[0m pub fn handle_get_macro_event(
+    [1m[94m|[0m        [1m[91m^^^^^^^^^^^^^^^^^^^^^^[0m
+
+[1m[91merror[0m: could not compile `globalnews-app` (bin "globalnews-app" test) due to 5 previous errors
+[1m[33mwarning[0m: build failed, waiting for other jobs to finish...
+[1m[91merror[0m: could not compile `globalnews-app` (bin "globalnews-app") due to 5 previous errors
