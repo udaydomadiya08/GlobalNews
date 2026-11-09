@@ -39,7 +39,19 @@ jobs:
         run: cargo fmt --all -- --check
 
       - name: Workspace Clippy
-        run: cargo clippy --workspace --all-targets -- -D warnings
+        shell: bash
+        run: cargo clippy --workspace --all-targets -- -D warnings 2>&1 | tee clippy_results.txt
+
+      - name: Publish Lint Results on Success
+        if: success()
+        shell: bash
+        run: |
+          git config --global user.name "CI Bot"
+          git config --global user.email "ci@globalnews.local"
+          git checkout -B ci-results-lint
+          git add -f clippy_results.txt
+          git commit -m "ci: clippy clean verification"
+          git push -f origin ci-results-lint || true
 
       - name: Publish Diagnostics on Failure
         if: failure()
@@ -95,7 +107,19 @@ jobs:
         run: cargo check --workspace
 
       - name: Execute Workspace Test Suite
-        run: cargo test --workspace -- --nocapture
+        shell: bash
+        run: cargo test --workspace -- --nocapture 2>&1 | tee test_results_${{ matrix.platform.slug }}.txt
+
+      - name: Publish Test Results on Success
+        if: success()
+        shell: bash
+        run: |
+          git config --global user.name "CI Bot"
+          git config --global user.email "ci@globalnews.local"
+          git checkout -B ci-results-${{ matrix.platform.slug }}
+          git add -f test_results_${{ matrix.platform.slug }}.txt
+          git commit -m "ci: test verification for ${{ matrix.platform.name }}"
+          git push -f origin ci-results-${{ matrix.platform.slug }} || true
 
       - name: Publish Diagnostics on Failure
         if: failure()

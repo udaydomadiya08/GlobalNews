@@ -352,8 +352,6 @@ impl Repository {
         let rows_affected = conn.execute("DELETE FROM micro_events WHERE id = ?1;", params![id])?;
         Ok(rows_affected > 0)
     }
-        Ok(rows_affected > 0)
-    }
 
     // -------------------------------------------------------------------------
     // Full-Text Search (FTS5 BM25 Ranking)
