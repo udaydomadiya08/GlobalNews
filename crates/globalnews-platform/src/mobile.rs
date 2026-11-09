@@ -41,9 +41,15 @@ impl PlatformAdapter for MobileAdapter {
 
     fn schedule_background_sync(&self, interval_mins: u32) -> Result<(), PlatformError> {
         if self.is_ios {
-            info!("[iOS BGTaskScheduler Bridge] Registered BGAppRefreshTask (interval: {}m)", interval_mins);
+            info!(
+                "[iOS BGTaskScheduler Bridge] Registered BGAppRefreshTask (interval: {}m)",
+                interval_mins
+            );
         } else {
-            info!("[Android WorkManager Bridge] Scheduled PeriodicWorkRequest (interval: {}m)", interval_mins);
+            info!(
+                "[Android WorkManager Bridge] Scheduled PeriodicWorkRequest (interval: {}m)",
+                interval_mins
+            );
         }
         Ok(())
     }

@@ -36,16 +36,32 @@ impl ImportanceScore {
 
     pub fn validate(&self) -> Result<(), ContractError> {
         if !(1.0..=10.0).contains(&self.final_score) {
-            return Err(ContractError::InvalidScoreRange(self.final_score, 1.0, 10.0));
+            return Err(ContractError::InvalidScoreRange(
+                self.final_score,
+                1.0,
+                10.0,
+            ));
         }
         if !(1.0..=10.0).contains(&self.domain_severity) {
-            return Err(ContractError::InvalidScoreRange(self.domain_severity, 1.0, 10.0));
+            return Err(ContractError::InvalidScoreRange(
+                self.domain_severity,
+                1.0,
+                10.0,
+            ));
         }
         if !(1.0..=10.0).contains(&self.geographic_reach) {
-            return Err(ContractError::InvalidScoreRange(self.geographic_reach, 1.0, 10.0));
+            return Err(ContractError::InvalidScoreRange(
+                self.geographic_reach,
+                1.0,
+                10.0,
+            ));
         }
         if !(0.0..=10.0).contains(&self.physical_impact) {
-            return Err(ContractError::InvalidScoreRange(self.physical_impact, 0.0, 10.0));
+            return Err(ContractError::InvalidScoreRange(
+                self.physical_impact,
+                0.0,
+                10.0,
+            ));
         }
         if self.volume_dampener < 1.0 {
             return Err(ContractError::ValidationError {
@@ -60,7 +76,7 @@ impl ImportanceScore {
 /// Quantifies evidence strength, source diversity, and jurisdictional corroboration.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub struct ConfidenceScore {
-    pub final_confidence: f64,        // Range: 0.1 to 1.0
+    pub final_confidence: f64, // Range: 0.1 to 1.0
     pub independent_source_count: u32,
     pub jurisdictional_diversity: f64, // 0.0 to 1.0 (cross-border corroboration)
     pub has_sensor_validation: bool,   // Ground truth from physical sensors (USGS/GDACS)
@@ -95,10 +111,18 @@ impl ConfidenceScore {
 
     pub fn validate(&self) -> Result<(), ContractError> {
         if !(0.1..=1.0).contains(&self.final_confidence) {
-            return Err(ContractError::InvalidScoreRange(self.final_confidence, 0.1, 1.0));
+            return Err(ContractError::InvalidScoreRange(
+                self.final_confidence,
+                0.1,
+                1.0,
+            ));
         }
         if !(0.0..=1.0).contains(&self.jurisdictional_diversity) {
-            return Err(ContractError::InvalidScoreRange(self.jurisdictional_diversity, 0.0, 1.0));
+            return Err(ContractError::InvalidScoreRange(
+                self.jurisdictional_diversity,
+                0.0,
+                1.0,
+            ));
         }
         Ok(())
     }

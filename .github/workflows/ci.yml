@@ -41,7 +41,6 @@ jobs:
   # ---------------------------------------------------------------------------
   test-matrix:
     name: Test (${{ matrix.platform.name }})
-    needs: lint
     runs-on: ${{ matrix.platform.os }}
     strategy:
       fail-fast: false
@@ -95,12 +94,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: 'npm'
-          cache-dependency-path: crates/globalnews-app/package-lock.json
 
       - name: Install Frontend Dependencies
         working-directory: crates/globalnews-app
-        run: npm ci || npm install
+        run: npm install
 
       - name: Frontend Production Build
         working-directory: crates/globalnews-app

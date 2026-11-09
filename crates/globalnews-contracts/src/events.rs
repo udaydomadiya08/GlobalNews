@@ -35,19 +35,19 @@ pub enum RelationType {
 /// Represents a localized incident node plotted as a hotspot on the 3D Earth.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub struct MicroEvent {
-    pub id: String,                     // UUID v4
+    pub id: String, // UUID v4
     #[serde(skip_serializing_if = "Option::is_none")]
     pub macro_event_id: Option<String>, // Parent container (e.g. war or crisis)
-    pub title: String,                  // Canonical event headline
-    pub summary: String,                // 3-sentence synthesized extractive dossier
-    pub category_code: String,          // Standard IPTC Media Topic (e.g. "03000000")
-    pub importance: ImportanceScore,    // Drives hotspot radius
-    pub confidence: ConfidenceScore,    // Drives hotspot opacity / cadence
-    pub location: GeographicLocation,   // Spherical plotting coordinates
-    pub status: EventStatus,            // Lifecycle state
-    pub first_seen_at: String,          // RFC 3339 UTC
-    pub last_updated_at: String,        // RFC 3339 UTC
-    pub citation_count: u32,            // Count of linked citations
+    pub title: String, // Canonical event headline
+    pub summary: String, // 3-sentence synthesized extractive dossier
+    pub category_code: String, // Standard IPTC Media Topic (e.g. "03000000")
+    pub importance: ImportanceScore, // Drives hotspot radius
+    pub confidence: ConfidenceScore, // Drives hotspot opacity / cadence
+    pub location: GeographicLocation, // Spherical plotting coordinates
+    pub status: EventStatus, // Lifecycle state
+    pub first_seen_at: String, // RFC 3339 UTC
+    pub last_updated_at: String, // RFC 3339 UTC
+    pub citation_count: u32, // Count of linked citations
 }
 
 impl MicroEvent {
@@ -78,15 +78,15 @@ impl MicroEvent {
 /// Represents a persistent macro development container (multi-month or multi-year).
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub struct MacroEvent {
-    pub id: String,                     // UUID v4
-    pub title: String,                  // E.g. "Russo-Ukrainian War"
-    pub category_code: String,          // IPTC code
-    pub summary: String,                // Macro overview
-    pub status: MacroEventStatus,       // Active, Dormant, Concluded
-    pub bounding_box: [f64; 4],         // [min_lat, min_lon, max_lat, max_lon]
-    pub created_at: String,             // RFC 3339 UTC
-    pub updated_at: String,             // RFC 3339 UTC
-    pub active_micro_event_count: u32,  // Count of child micro-events
+    pub id: String,                    // UUID v4
+    pub title: String,                 // E.g. "Russo-Ukrainian War"
+    pub category_code: String,         // IPTC code
+    pub summary: String,               // Macro overview
+    pub status: MacroEventStatus,      // Active, Dormant, Concluded
+    pub bounding_box: [f64; 4],        // [min_lat, min_lon, max_lat, max_lon]
+    pub created_at: String,            // RFC 3339 UTC
+    pub updated_at: String,            // RFC 3339 UTC
+    pub active_micro_event_count: u32, // Count of child micro-events
 }
 
 impl MacroEvent {

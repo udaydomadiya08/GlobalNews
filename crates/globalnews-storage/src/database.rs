@@ -79,7 +79,10 @@ impl DatabaseManager {
     where
         F: FnOnce(&mut Connection) -> Result<R, StorageError>,
     {
-        let mut conn = self.write_conn.lock().map_err(|_| StorageError::LockTimeout)?;
+        let mut conn = self
+            .write_conn
+            .lock()
+            .map_err(|_| StorageError::LockTimeout)?;
         f(&mut conn)
     }
 
@@ -98,7 +101,9 @@ impl DatabaseManager {
                     | rusqlite::OpenFlags::SQLITE_OPEN_NO_MUTEX,
             )?,
         };
-        conn.busy_timeout(std::time::Duration::from_millis(self.config.busy_timeout_ms))?;
+        conn.busy_timeout(std::time::Duration::from_millis(
+            self.config.busy_timeout_ms,
+        ))?;
         Ok(conn)
     }
 

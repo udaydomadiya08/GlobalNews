@@ -69,7 +69,9 @@ pub fn handle_search_events(
     limit: Option<u32>,
 ) -> Result<Vec<SearchResult>, CommandError> {
     if query.trim().is_empty() {
-        return Err(CommandError::InvalidRequest("Search query cannot be empty".into()));
+        return Err(CommandError::InvalidRequest(
+            "Search query cannot be empty".into(),
+        ));
     }
     let lim = limit.unwrap_or(20);
     state.db.with_reader(|conn| {
@@ -78,7 +80,11 @@ pub fn handle_search_events(
 
         let results = rows
             .into_iter()
-            .map(|(event_id, title, rank)| SearchResult { event_id, title, rank })
+            .map(|(event_id, title, rank)| SearchResult {
+                event_id,
+                title,
+                rank,
+            })
             .collect();
 
         Ok(results)
@@ -90,8 +96,7 @@ pub fn handle_get_micro_event(
     id: String,
 ) -> Result<Option<MicroEvent>, CommandError> {
     state.db.with_reader(|conn| {
-        Repository::get_micro_event(conn, &id)
-            .map_err(|e| CommandError::Database(e.to_string()))
+        Repository::get_micro_event(conn, &id).map_err(|e| CommandError::Database(e.to_string()))
     })
 }
 
@@ -100,7 +105,6 @@ pub fn handle_get_macro_event(
     id: String,
 ) -> Result<Option<MacroEvent>, CommandError> {
     state.db.with_reader(|conn| {
-        Repository::get_macro_event(conn, &id)
-            .map_err(|e| CommandError::Database(e.to_string()))
+        Repository::get_macro_event(conn, &id).map_err(|e| CommandError::Database(e.to_string()))
     })
 }

@@ -17,6 +17,9 @@ fn test_benchmark_runner_execution() {
     assert!(report.deserialization_ops_per_sec > 1000.0);
     if let Some(rss) = report.memory_rss_mb {
         println!("Measured Memory RSS: {:.2} MB", rss);
-        assert!(rss < 120.0, "Expected baseline engine memory to be well under 120 MB");
+        assert!(
+            rss < 120.0,
+            "Expected baseline engine memory to be well under 120 MB"
+        );
     }
 }

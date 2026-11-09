@@ -25,7 +25,9 @@ impl Repository {
                 event.title,
                 event.category_code,
                 event.summary,
-                serde_json::to_string(&event.status).unwrap().trim_matches('"'),
+                serde_json::to_string(&event.status)
+                    .unwrap()
+                    .trim_matches('"'),
                 event.bounding_box[0],
                 event.bounding_box[1],
                 event.bounding_box[2],
@@ -51,7 +53,13 @@ impl Repository {
             .query_row(params![id], |row| {
                 let status_str: String = row.get(4)?;
                 let status: MacroEventStatus = serde_json::from_str(&format!("\"{}\"", status_str))
-                    .map_err(|e| rusqlite::Error::FromSqlConversionFailure(4, rusqlite::types::Type::Text, Box::new(e)))?;
+                    .map_err(|e| {
+                        rusqlite::Error::FromSqlConversionFailure(
+                            4,
+                            rusqlite::types::Type::Text,
+                            Box::new(e),
+                        )
+                    })?;
 
                 Ok(MacroEvent {
                     id: row.get(0)?,
@@ -165,7 +173,13 @@ impl Repository {
             .query_row(params![id], |row| {
                 let status_str: String = row.get(23)?;
                 let status: EventStatus = serde_json::from_str(&format!("\"{}\"", status_str))
-                    .map_err(|e| rusqlite::Error::FromSqlConversionFailure(23, rusqlite::types::Type::Text, Box::new(e)))?;
+                    .map_err(|e| {
+                        rusqlite::Error::FromSqlConversionFailure(
+                            23,
+                            rusqlite::types::Type::Text,
+                            Box::new(e),
+                        )
+                    })?;
 
                 let importance = ImportanceScore {
                     final_score: row.get(5)?,
@@ -311,7 +325,13 @@ impl Repository {
         let rows = stmt.query_map(params![event_id], |row| {
             let rel_str: String = row.get(2)?;
             let rel_type: RelationType = serde_json::from_str(&format!("\"{}\"", rel_str))
-                .map_err(|e| rusqlite::Error::FromSqlConversionFailure(2, rusqlite::types::Type::Text, Box::new(e)))?;
+                .map_err(|e| {
+                    rusqlite::Error::FromSqlConversionFailure(
+                        2,
+                        rusqlite::types::Type::Text,
+                        Box::new(e),
+                    )
+                })?;
 
             Ok(EventRelationship {
                 source_event_id: row.get(0)?,
@@ -329,10 +349,9 @@ impl Repository {
     }
 
     pub fn delete_micro_event(conn: &Connection, id: &str) -> Result<bool, StorageError> {
-        let rows_affected = conn.execute(
-            "DELETE FROM micro_events WHERE id = ?1;",
-            params![id],
-        )?;
+        let rows_affected = conn.execute("DELETE FROM micro_events WHERE id = ?1;", params![id])?;
+        Ok(rows_affected > 0)
+    }
         Ok(rows_affected > 0)
     }
 

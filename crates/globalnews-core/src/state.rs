@@ -26,7 +26,11 @@ impl EngineState {
             busy_timeout_ms: 5000,
         })?);
 
-        Ok(Self { config, db, platform })
+        Ok(Self {
+            config,
+            db,
+            platform,
+        })
     }
 
     pub fn new_in_memory() -> Result<Self, CoreError> {
@@ -34,7 +38,11 @@ impl EngineState {
         let config = CoreConfig::default();
         let db = Arc::new(DatabaseManager::new_in_memory()?);
 
-        Ok(Self { config, db, platform })
+        Ok(Self {
+            config,
+            db,
+            platform,
+        })
     }
 
     pub fn new_with_adapter(
@@ -47,6 +55,10 @@ impl EngineState {
             busy_timeout_ms: 5000,
         })?);
 
-        Ok(Self { config, db, platform })
+        Ok(Self {
+            config,
+            db,
+            platform,
+        })
     }
 }

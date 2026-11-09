@@ -39,13 +39,12 @@ impl PlatformAdapter for DesktopAdapter {
             .join(self.app_name);
 
         #[cfg(target_os = "windows")]
-        return PathBuf::from(std::env::var("LOCALAPPDATA").unwrap_or(home))
-            .join(self.app_name);
+        return PathBuf::from(std::env::var("LOCALAPPDATA").unwrap_or(home)).join(self.app_name);
 
         #[cfg(target_os = "linux")]
-        return PathBuf::from(std::env::var("XDG_DATA_HOME").unwrap_or_else(|_| {
-            format!("{}/.local/share", home)
-        }))
+        return PathBuf::from(
+            std::env::var("XDG_DATA_HOME").unwrap_or_else(|_| format!("{}/.local/share", home)),
+        )
         .join(self.app_name);
 
         #[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "linux")))]
@@ -62,7 +61,10 @@ impl PlatformAdapter for DesktopAdapter {
     }
 
     fn schedule_background_sync(&self, interval_mins: u32) -> Result<(), PlatformError> {
-        info!("[Desktop Background Scheduler] Sync interval configured to {} mins", interval_mins);
+        info!(
+            "[Desktop Background Scheduler] Sync interval configured to {} mins",
+            interval_mins
+        );
         Ok(())
     }
 }
