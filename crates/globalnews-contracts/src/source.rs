@@ -27,8 +27,16 @@ impl SourceCategory {
         }
     }
 
-    pub fn from_str(s: &str) -> Self {
-        match s {
+    pub fn parse_str(s: &str) -> Self {
+        s.parse().unwrap_or(Self::GeneralNews)
+    }
+}
+
+impl std::str::FromStr for SourceCategory {
+    type Err = std::convert::Infallible;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(match s {
             "geopolitical" => Self::Geopolitical,
             "disaster_seismic" => Self::DisasterSeismic,
             "science_tech" => Self::ScienceTech,
@@ -36,7 +44,7 @@ impl SourceCategory {
             "humanitarian_health" => Self::HumanitarianHealth,
             "environmental_climate" => Self::EnvironmentalClimate,
             _ => Self::GeneralNews,
-        }
+        })
     }
 }
 
@@ -58,12 +66,20 @@ impl FeedFormat {
         }
     }
 
-    pub fn from_str(s: &str) -> Option<Self> {
+    pub fn parse_str(s: &str) -> Option<Self> {
+        s.parse().ok()
+    }
+}
+
+impl std::str::FromStr for FeedFormat {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "rss2" | "rss" => Some(Self::Rss2),
-            "atom" => Some(Self::Atom),
-            "json_structured" | "geojson" | "json" => Some(Self::JsonStructured),
-            _ => None,
+            "rss2" | "rss" => Ok(Self::Rss2),
+            "atom" => Ok(Self::Atom),
+            "json_structured" | "geojson" | "json" => Ok(Self::JsonStructured),
+            _ => Err(()),
         }
     }
 }
@@ -84,11 +100,19 @@ impl RetrievalMethod {
         }
     }
 
-    pub fn from_str(s: &str) -> Self {
-        match s {
+    pub fn parse_str(s: &str) -> Self {
+        s.parse().unwrap_or(Self::HttpGet)
+    }
+}
+
+impl std::str::FromStr for RetrievalMethod {
+    type Err = std::convert::Infallible;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(match s {
             "http_conditional_get" => Self::HttpConditionalGet,
             _ => Self::HttpGet,
-        }
+        })
     }
 }
 

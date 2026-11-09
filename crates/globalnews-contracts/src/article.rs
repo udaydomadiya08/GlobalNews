@@ -21,12 +21,20 @@ impl ContentStorageClassification {
         }
     }
 
-    pub fn from_str(s: &str) -> Self {
-        match s {
+    pub fn parse_str(s: &str) -> Self {
+        s.parse().unwrap_or(Self::MetadataOnly)
+    }
+}
+
+impl std::str::FromStr for ContentStorageClassification {
+    type Err = std::convert::Infallible;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(match s {
             "permitted_excerpt" => Self::PermittedExcerpt,
             "full_content_permitted" => Self::FullContentPermitted,
             _ => Self::MetadataOnly,
-        }
+        })
     }
 }
 

@@ -23,14 +23,22 @@ impl IngestionStatus {
         }
     }
 
-    pub fn from_str(s: &str) -> Option<Self> {
+    pub fn parse_str(s: &str) -> Option<Self> {
+        s.parse().ok()
+    }
+}
+
+impl std::str::FromStr for IngestionStatus {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "running" => Some(Self::Running),
-            "success" => Some(Self::Success),
-            "not_modified" => Some(Self::NotModified),
-            "partial_error" => Some(Self::PartialError),
-            "failed" => Some(Self::Failed),
-            _ => None,
+            "running" => Ok(Self::Running),
+            "success" => Ok(Self::Success),
+            "not_modified" => Ok(Self::NotModified),
+            "partial_error" => Ok(Self::PartialError),
+            "failed" => Ok(Self::Failed),
+            _ => Err(()),
         }
     }
 }
@@ -117,8 +125,16 @@ impl ErrorKind {
         }
     }
 
-    pub fn from_str(s: &str) -> Self {
-        match s {
+    pub fn parse_str(s: &str) -> Self {
+        s.parse().unwrap_or(Self::Other)
+    }
+}
+
+impl std::str::FromStr for ErrorKind {
+    type Err = std::convert::Infallible;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(match s {
             "network_timeout" => Self::NetworkTimeout,
             "tls_error" => Self::TlsError,
             "http_429" => Self::Http429,
@@ -130,7 +146,7 @@ impl ErrorKind {
             "json_parse_error" => Self::JsonParseError,
             "ssrf_blocked" => Self::SsrfBlocked,
             _ => Self::Other,
-        }
+        })
     }
 }
 
