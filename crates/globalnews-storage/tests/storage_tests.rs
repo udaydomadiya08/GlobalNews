@@ -384,8 +384,8 @@ fn test_macro_event_relationships() {
 
 #[test]
 fn test_concurrent_readers_and_single_writer() {
-    let db_path =
-        std::env::temp_dir().join(format!("globalnews_test_concurrent_{}.db", uuid::Uuid::new_v4()));
+    let file_name = format!("globalnews_test_concurrent_{}.db", uuid::Uuid::new_v4());
+    let db_path = std::env::temp_dir().join(file_name);
     let db = DatabaseManager::open_file(&db_path).unwrap();
     let db_arc = std::sync::Arc::new(db);
 

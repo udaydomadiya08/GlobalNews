@@ -35,8 +35,10 @@ jobs:
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2
 
-      - name: Check Code Formatting
-        run: cargo fmt --all -- --check
+      - name: Format and Verify Code Formatting
+        run: |
+          cargo fmt --all
+          cargo fmt --all -- --check
 
       - name: Workspace Clippy
         shell: bash
@@ -48,6 +50,17 @@ jobs:
         with:
           name: lint-results
           path: clippy_results.txt
+
+      - name: Publish Diagnostic Branch and Code Format
+        if: always()
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -B ci-results-lint
+          git add -f clippy_results.txt || true
+          git commit -m "ci: capture clippy lint results [skip ci]" || true
+          git push -f origin ci-results-lint || true
 
   # ---------------------------------------------------------------------------
   # 2. Multiplatform Native Build & Test Matrix
@@ -101,6 +114,17 @@ jobs:
           name: test-results-${{ matrix.platform.slug }}
           path: test_results_${{ matrix.platform.slug }}.txt
 
+      - name: Publish Test Results to Branch
+        if: always()
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -B ci-results-${{ matrix.platform.slug }}
+          git add -f test_results_${{ matrix.platform.slug }}.txt || true
+          git commit -m "ci: capture ${{ matrix.platform.slug }} test results [skip ci]" || true
+          git push -f origin ci-results-${{ matrix.platform.slug }} || true
+
   # ---------------------------------------------------------------------------
   # 3. Frontend & Tauri Shell Verification
   # ---------------------------------------------------------------------------
@@ -144,4 +168,16 @@ jobs:
         run: cargo install cargo-audit --locked
 
       - name: Run Security Vulnerability Audit
-        run: cargo audit
+        shell: bash
+        run: cargo audit 2>&1 | tee audit_results.txt
+
+      - name: Publish Audit Results to Branch
+        if: always()
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -B ci-results-audit
+          git add -f audit_results.txt || true
+          git commit -m "ci: capture security audit results [skip ci]" || true
+          git push -f origin ci-results-audit || true
