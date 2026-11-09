@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 env:
   CARGO_TERM_COLOR: always
@@ -24,6 +24,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install Rust Stable (pinned)
         uses: dtolnay/rust-toolchain@stable
@@ -33,22 +35,23 @@ jobs:
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2
 
-      - name: Format Check and Clippy
-        shell: bash
-        run: |
-          echo "Running cargo fmt check..."
-          if ! cargo fmt --all -- --check; then
-            DIFF_MSG=$(cargo fmt --all -- --check 2>&1 | head -n 30 | tr '\n' ' ')
-            echo "::error::$DIFF_MSG"
-            exit 1
-          fi
+      - name: Check Code Formatting
+        run: cargo fmt --all -- --check
 
-          echo "Running cargo clippy..."
-          if ! cargo clippy --workspace --all-targets -- -D warnings; then
-            CLIPPY_MSG=$(cargo clippy --workspace --all-targets -- -D warnings 2>&1 | head -n 30 | tr '\n' ' ')
-            echo "::error::$CLIPPY_MSG"
-            exit 1
-          fi
+      - name: Workspace Clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: Publish Diagnostics on Failure
+        if: failure()
+        run: |
+          cargo fmt --all -- --check > fmt_err.txt 2>&1 || true
+          cargo clippy --workspace --all-targets -- -D warnings > clippy_err.txt 2>&1 || true
+          git config --global user.name "CI Bot"
+          git config --global user.email "ci@globalnews.local"
+          git checkout -B ci-lint-debug
+          git add -f fmt_err.txt clippy_err.txt
+          git commit -m "ci: lint failure logs"
+          git push -f origin ci-lint-debug || true
 
   # ---------------------------------------------------------------------------
   # 2. Multiplatform Native Build & Test Matrix
@@ -62,14 +65,19 @@ jobs:
         platform:
           - name: macOS Host (arm64)
             os: macos-latest
+            slug: macos
           - name: Windows Host (MSVC x64)
             os: windows-latest
+            slug: windows
           - name: Linux Host (GNU x64)
             os: ubuntu-latest
+            slug: linux
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install Linux system dependencies
         if: runner.os == 'Linux'
@@ -83,22 +91,24 @@ jobs:
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2
 
-      - name: Build and Test Workspace
+      - name: Workspace Type Check
+        run: cargo check --workspace
+
+      - name: Execute Workspace Test Suite
+        run: cargo test --workspace -- --nocapture
+
+      - name: Publish Diagnostics on Failure
+        if: failure()
         shell: bash
         run: |
-          echo "Running cargo check..."
-          if ! cargo check --workspace; then
-            CHECK_MSG=$(cargo check --workspace 2>&1 | head -n 30 | tr '\n' ' ')
-            echo "::error::$CHECK_MSG"
-            exit 1
-          fi
-          
-          echo "Running cargo test..."
-          if ! cargo test --workspace -- --nocapture; then
-            TEST_MSG=$(cargo test --workspace -- --nocapture 2>&1 | head -n 30 | tr '\n' ' ')
-            echo "::error::$TEST_MSG"
-            exit 1
-          fi
+          cargo check --workspace > check_err_${{ matrix.platform.slug }}.txt 2>&1 || true
+          cargo test --workspace -- --nocapture > test_err_${{ matrix.platform.slug }}.txt 2>&1 || true
+          git config --global user.name "CI Bot"
+          git config --global user.email "ci@globalnews.local"
+          git checkout -B ci-test-${{ matrix.platform.slug }}-debug
+          git add -f check_err_${{ matrix.platform.slug }}.txt test_err_${{ matrix.platform.slug }}.txt
+          git commit -m "ci: test failure logs for ${{ matrix.platform.name }}"
+          git push -f origin ci-test-${{ matrix.platform.slug }}-debug || true
 
   # ---------------------------------------------------------------------------
   # 3. Frontend & Tauri Shell Verification
