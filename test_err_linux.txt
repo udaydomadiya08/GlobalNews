@@ -1,0 +1,93 @@
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.04s
+[1m[92m     Running[0m unittests src/main.rs (target/debug/deps/globalnews_app-52088f19fe1e7b9a)
+
+running 1 test
+test tests::test_in_process_command_handling ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+[1m[92m     Running[0m unittests src/lib.rs (target/debug/deps/globalnews_contracts-702b28042b1e555a)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+[1m[92m     Running[0m tests/contract_tests.rs (target/debug/deps/contract_tests-4b77a7521a5e29c6)
+
+running 4 tests
+test test_geographic_location_validation ... ok
+test test_importance_and_confidence_scoring ... ok
+test test_sync_envelope_validation ... ok
+test test_micro_event_serialization_roundtrip ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+[1m[92m     Running[0m unittests src/lib.rs (target/debug/deps/globalnews_core-52944c6fe79f73b5)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+[1m[92m     Running[0m tests/core_tests.rs (target/debug/deps/core_tests-411dcd294c51f0e9)
+
+running 2 tests
+test test_core_engine_initialization_in_memory ... ok
+Benchmark Report: BenchmarkReport { startup_time_ms: 6.1087110000000004, db_init_time_ms: 6.10837, serialization_ops_per_sec: 30089.595682792955, deserialization_ops_per_sec: 61834.14595561834, memory_rss_mb: Some(35.9296875) }
+Measured Memory RSS: 35.93 MB
+test test_benchmark_runner_execution ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.50s
+
+[1m[92m     Running[0m unittests src/lib.rs (target/debug/deps/globalnews_platform-f0cc953659bc0e49)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+[1m[92m     Running[0m unittests src/lib.rs (target/debug/deps/globalnews_storage-54692673ce58b408)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+[1m[92m     Running[0m tests/storage_tests.rs (target/debug/deps/storage_tests-238a3350b8c34172)
+
+running 8 tests
+test test_database_initialization_and_migrations ... ok
+
+thread 'test_concurrent_readers_and_single_writer' (5872) panicked at crates/globalnews-storage/tests/storage_tests.rs:443:14:
+called `Result::unwrap()` on an `Err` value: SqliteError(SqliteFailure(Error { code: DatabaseLocked, extended_code: 262 }, Some("database table is locked: micro_events")))
+test test_fts5_bm25_search ... stack backtrace:
+ok
+test test_fts5_triggers_on_update_and_delete ... ok
+test test_migration_rollback_on_failure ... ok
+test test_macro_and_micro_event_crud ... ok
+test test_macro_event_relationships ... ok
+   0: __rustc::rust_begin_unwind
+             at /rustc/58cf8f9c35b355199727627d07ae34a4e2846d67/library/std/src/panicking.rs:679:5
+   1: core::panicking::panic_fmt
+             at /rustc/58cf8f9c35b355199727627d07ae34a4e2846d67/library/core/src/panicking.rs:80:14
+   2: core::result::unwrap_failed
+             at /rustc/58cf8f9c35b355199727627d07ae34a4e2846d67/library/core/src/result.rs:1871:5
+   3: <core::result::Result<(), globalnews_storage::error::StorageError>>::unwrap
+             at /rustc/58cf8f9c35b355199727627d07ae34a4e2846d67/library/core/src/result.rs:1232:23
+   4: storage_tests::test_concurrent_readers_and_single_writer
+             at ./tests/storage_tests.rs:443:14
+   5: storage_tests::test_concurrent_readers_and_single_writer::{closure#0}
+             at ./tests/storage_tests.rs:386:47
+   6: <storage_tests::test_concurrent_readers_and_single_writer::{closure#0} as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/58cf8f9c35b355199727627d07ae34a4e2846d67/library/core/src/ops/function.rs:250:5
+   7: <fn() -> core::result::Result<(), alloc::string::String> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/58cf8f9c35b355199727627d07ae34a4e2846d67/library/core/src/ops/function.rs:250:5
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+test test_concurrent_readers_and_single_writer ... FAILED
+test test_persistent_database_lifecycle_and_wal ... ok
+
+failures:
+
+failures:
+    test_concurrent_readers_and_single_writer
+
+test result: FAILED. 7 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+[1m[91merror[0m: test failed, to rerun pass `-p globalnews-storage --test storage_tests`
