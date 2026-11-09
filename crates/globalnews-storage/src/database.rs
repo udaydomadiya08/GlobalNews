@@ -88,7 +88,7 @@ impl DatabaseManager {
 
     /// Creates a read-only connection for concurrent non-blocking queries.
     pub fn create_reader(&self) -> Result<Connection, StorageError> {
-        let mut conn = match &self.config.path {
+        let conn = match &self.config.path {
             Some(path) => Connection::open_with_flags(
                 path,
                 rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY
