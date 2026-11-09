@@ -127,6 +127,11 @@ impl DatabaseManager {
         Ok(conn)
     }
 
+    /// Returns a dedicated read-only connection.
+    pub fn get_reader(&self) -> Result<Connection, StorageError> {
+        self.create_reader()
+    }
+
     /// Executes a read operation on a dedicated read connection.
     pub fn with_reader<F, R>(&self, f: F) -> Result<R, StorageError>
     where

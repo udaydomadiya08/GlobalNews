@@ -176,7 +176,7 @@ impl ArticleNormalizer {
         let canon_hash = NormalizedArticle::compute_hash(&canonical_url);
         let td_hash = NormalizedArticle::compute_title_date_hash(&clean_title, published_at.as_deref());
 
-        let mut article = NormalizedArticle {
+        let article = NormalizedArticle {
             id,
             source_id: source.id.clone(),
             endpoint_id: ep_id,
