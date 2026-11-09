@@ -86,3 +86,11 @@ Success: 0 vulnerabilities found!
 ## 6. Audit Conclusion
 
 The GLOBALNEWS dependency graph is clean, secure, minimally sized, and fully compliant with all commercial and open-source licensing standards. No dependency updates or remediation actions are required.
+
+---
+
+## 7. Clarifications & Errata (Phase 1.2 Inception)
+
+1. **Distinction Between Vulnerability Scans and Licence Audits:** `cargo-audit` is exclusively a vulnerability advisory scanner inspecting dependencies against the RustSec Advisory Database. The licence compatibility table in Section 4 was derived from manifest metadata inspection, not an automated AST or licence-scanning policy engine (such as `cargo-deny`). In Phase 1.2, formal licence policy enforcement will be segregated from vulnerability auditing.
+2. **Lockfile Generation vs. Source Tracking:** The `Cargo.lock` analyzed during Phase 1.1.2 was generated transiently on the CI runner (`cargo generate-lockfile`). The repository at revision `7213d04` did not track `Cargo.lock` directly in Git. For reproducible production dependency graphs, `Cargo.lock` must be committed to the repository in Phase 1.2.
+

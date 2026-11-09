@@ -24,7 +24,7 @@ To maintain engineering integrity, platforms are rigorously classified into expl
 | **macOS Apple Silicon** | `aarch64-apple-darwin` | **Tier A** | `macos-latest` (Apple Silicon M-series) | `rustc 1.84.1` / Clang | Native build, 15/15 tests, WAL DB, Benchmarks | **`VERIFIED`** |
 | **Windows x64 MSVC** | `x86_64-pc-windows-msvc` | **Tier A** | `windows-latest` (Win Server 2022) | `rustc 1.84.1` / MSVC C++ | Native build, 15/15 tests, WAL DB, Benchmarks | **`VERIFIED`** |
 | **Linux x64 GNU** | `x86_64-unknown-linux-gnu` | **Tier A** | `ubuntu-latest` (Ubuntu 24.04 LTS) | `rustc 1.84.1` / GCC | Native build, 15/15 tests, WebKitGTK, DB, Benchmarks | **`VERIFIED`** |
-| **Frontend Web Shell** | N/A (ECMAScript / WASM) | **Tier A** | `ubuntu-latest` | Node.js 22.x / Vite 6.0 | Production bundle compilation (`dist/`), TS checks | **`VERIFIED`** |
+| **Frontend Web Shell** | N/A (ECMAScript / Web) | **Tier A** | `ubuntu-latest` | Node.js 22.x / Vite 6.0 | Production bundle (`dist/`), TS checks (Not native packaging) | **`VERIFIED`** |
 | **Android ARM64** | `aarch64-linux-android` | **Tier B** | Cross-compile host | Rust / Android NDK r26 | Shared core compiled without OS-specific lock-in | **`SCAFFOLDED`** |
 | **Android x86_64** | `x86_64-linux-android` | **Tier B** | Cross-compile host | Rust / Android NDK r26 | Emulator architecture compatibility verified | **`SCAFFOLDED`** |
 | **iOS ARM64 Device** | `aarch64-apple-ios` | **Tier B** | macOS host | Rust / Xcode 16 Clang | Core contracts & storage verified zero-OS lock-in | **`SCAFFOLDED`** |

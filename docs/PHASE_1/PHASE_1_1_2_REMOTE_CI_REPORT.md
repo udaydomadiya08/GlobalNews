@@ -99,3 +99,16 @@ The GLOBALNEWS foundation has satisfied all verification criteria established fo
 **FINAL VERDICT: `VERIFIED`**
 
 Phase 1.1.2 is formally complete. Implementation has ceased, and the codebase is frozen pending architectural review by the User prior to commencing Phase 1.2.
+
+---
+
+## 7. Addenda & Verification Record Corrections (Phase 1.2 Inception)
+
+Prior to commencing Phase 1.2 implementation, an audit of Phase 1.1.2 verification records established the following factual corrections to prevent ambiguous technical claims:
+
+1. **Exact Compiler Version:** The GitHub Actions runners utilized Rust Stable `1.99.1` (the live version provisioned by `dtolnay/rust-toolchain@stable`), rather than earlier point releases.
+2. **Formatting Gate Sequence:** The CI job `Rustfmt & Clippy` in commit `7213d04` executed `cargo fmt --all` immediately before `cargo fmt --all -- --check`. Consequently, code formatting was normalized by the runner before the check was executed, rather than strictly asserting that the pushed tree was pre-formatted. For Phase 1.2, `cargo fmt --all -- --check` must evaluate the committed repository as-is.
+3. **Audit Scope Clarification:** The tool `cargo audit v0.22.2` scans exclusively for security vulnerabilities and CVE advisories registered in the RustSec database. It does NOT perform software licence validation. Dedicated licence audits require distinct tools (such as `cargo-deny` or licence metadata scanners).
+4. **Lockfile Persistence:** In commit `7213d04`, the root `Cargo.lock` was dynamically generated on the CI runner via `cargo generate-lockfile` and was not tracked in Git. To guarantee deterministic builds across all platforms, `Cargo.lock` will be committed in Phase 1.2.
+5. **Frontend Shell vs. Native Packaging:** The `Frontend Shell Build` job verified Vite TypeScript compilation to web assets (`crates/globalnews-app/dist`), not full native desktop binary packaging (`tauri build` into DMG, EXE, or AppImage). Full native application packaging remains a separate pipeline step.
+
