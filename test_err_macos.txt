@@ -1,0 +1,90 @@
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 0.07s
+[1m[92m     Running[0m unittests src/main.rs (target/debug/deps/globalnews_app-cf6b2530a6aab7af)
+
+running 1 test
+test tests::test_in_process_command_handling ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+[1m[92m     Running[0m unittests src/lib.rs (target/debug/deps/globalnews_contracts-d821dabc80e9e01c)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+[1m[92m     Running[0m tests/contract_tests.rs (target/debug/deps/contract_tests-413e199d836d80cc)
+
+running 4 tests
+test test_importance_and_confidence_scoring ... ok
+test test_geographic_location_validation ... ok
+test test_micro_event_serialization_roundtrip ... ok
+test test_sync_envelope_validation ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+[1m[92m     Running[0m unittests src/lib.rs (target/debug/deps/globalnews_core-a9d28bee5876df84)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+[1m[92m     Running[0m tests/core_tests.rs (target/debug/deps/core_tests-20dfb793125e1525)
+
+running 2 tests
+test test_core_engine_initialization_in_memory ... ok
+Benchmark Report: BenchmarkReport { startup_time_ms: 11.949625000000001, db_init_time_ms: 11.949375, serialization_ops_per_sec: 17065.354824171536, deserialization_ops_per_sec: 37256.008120885825, memory_rss_mb: Some(8.65625) }
+Measured Memory RSS: 8.66 MB
+test test_benchmark_runner_execution ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.87s
+
+[1m[92m     Running[0m unittests src/lib.rs (target/debug/deps/globalnews_platform-e4a8c6be11cc6051)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+[1m[92m     Running[0m unittests src/lib.rs (target/debug/deps/globalnews_storage-261ea9122140b844)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+[1m[92m     Running[0m tests/storage_tests.rs (target/debug/deps/storage_tests-3f98674fa3e51fd1)
+
+running 8 tests
+test test_database_initialization_and_migrations ... ok
+test test_fts5_bm25_search ... ok
+test test_fts5_triggers_on_update_and_delete ... ok
+test test_macro_and_micro_event_crud ... ok
+test test_migration_rollback_on_failure ... ok
+test test_concurrent_readers_and_single_writer ... ok
+test test_macro_event_relationships ... ok
+test test_persistent_database_lifecycle_and_wal ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+[1m[92m   Doc-tests[0m globalnews_contracts
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+[1m[92m   Doc-tests[0m globalnews_core
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+[1m[92m   Doc-tests[0m globalnews_platform
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+[1m[92m   Doc-tests[0m globalnews_storage
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
