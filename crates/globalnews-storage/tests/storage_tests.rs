@@ -6,7 +6,7 @@ fn test_database_initialization_and_migrations() {
     let db = DatabaseManager::new_in_memory().expect("Failed to initialize in-memory DB");
     db.with_writer(|conn| {
         let version = MigrationRunner::get_current_version(conn)?;
-        assert_eq!(version, 1, "Expected migration version 1 to be applied");
+        assert_eq!(version, 2, "Expected migration version 2 to be applied");
         Ok(())
     })
     .unwrap();
@@ -450,6 +450,134 @@ fn test_concurrent_readers_and_single_writer() {
     }
 
     // Cleanup temporary files
+    let _ = std::fs::remove_file(&db_path);
+    let _ = std::fs::remove_file(db_path.with_extension("db-wal"));
+    let _ = std::fs::remove_file(db_path.with_extension("db-shm"));
+}
+
+#[test]
+fn test_phase_1_2_ingestion_storage_and_registry() {
+    let file_name = format!("globalnews_storage_p12_{}.db", uuid::Uuid::new_v4());
+    let db_path = std::env::temp_dir().join(file_name);
+    let db = DatabaseManager::open_file(&db_path).unwrap();
+
+    let mut conn = db.get_writer().unwrap();
+
+    // 1. Source Registry
+    let source = Source {
+        id: "src-usgs".into(),
+        name: "USGS Earthquakes".into(),
+        tier: 1,
+        feed_url: "https://earthquake.usgs.gov/feed".into(),
+        feed_type: "geojson".into(),
+        reliability_score: 1.0,
+        etag: Some("\"etag1\"".into()),
+        last_modified: Some("2026-11-09T00:00:00Z".into()),
+        last_polled_at: None,
+        canonical_domain: "earthquake.usgs.gov".into(),
+        category: SourceCategory::DisasterSeismic,
+        supported_languages: vec!["en".into()],
+        geographic_coverage: Some("GLOBAL".into()),
+        attribution_requirements: "Public Domain".into(),
+        licence_policy_url: None,
+        enabled: true,
+    };
+
+    Repository::upsert_source(&conn, &source).unwrap();
+    let fetched_source = Repository::get_source(&conn, "src-usgs").unwrap().unwrap();
+    assert_eq!(fetched_source.canonical_domain, "earthquake.usgs.gov");
+    assert_eq!(fetched_source.category, SourceCategory::DisasterSeismic);
+
+    // 2. Feed Endpoint
+    let endpoint = FeedEndpoint::new(
+        "ep-usgs-significant",
+        "src-usgs",
+        "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/significant_month.geojson",
+        FeedFormat::JsonStructured,
+    );
+    Repository::upsert_feed_endpoint(&conn, &endpoint).unwrap();
+    let fetched_ep = Repository::get_feed_endpoint(&conn, "ep-usgs-significant").unwrap().unwrap();
+    assert_eq!(fetched_ep.source_id, "src-usgs");
+
+    // 3. Checkpoint
+    let cp = FeedCheckpoint {
+        endpoint_id: "ep-usgs-significant".into(),
+        etag: Some("\"usgs-etag-99\"".into()),
+        last_modified: Some("Mon, 09 Nov 2026 12:00:00 GMT".into()),
+        last_retrieval_at: Some("2026-11-09T12:05:00Z".into()),
+        last_status_code: Some(200),
+        last_successful_article_count: 3,
+        content_hash: None,
+    };
+    Repository::upsert_feed_checkpoint(&conn, &cp).unwrap();
+    let fetched_cp = Repository::get_feed_checkpoint(&conn, "ep-usgs-significant").unwrap().unwrap();
+    assert_eq!(fetched_cp.last_status_code, Some(200));
+
+    // 4. Normalized Article & Deduplication
+    let art1 = NormalizedArticle::new(
+        "art-usgs-1",
+        "src-usgs",
+        "https://earthquake.usgs.gov/earthquakes/event/us7000test1",
+        "https://earthquake.usgs.gov/earthquakes/event/us7000test1?utm_source=feed",
+        "M 7.2 - Off Coast of Northern Sumatra",
+    );
+    let mut art1_full = art1;
+    art1_full.endpoint_id = Some("ep-usgs-significant".into());
+    art1_full.description_excerpt = Some("Tsunami evaluation underway by PTWC.".into());
+    art1_full.published_at = Some("2026-11-09T14:00:00Z".into());
+    art1_full.raw_published_at = Some("Mon, 09 Nov 2026 14:00:00 GMT".into());
+
+    let res1 = Repository::insert_normalized_article_if_unique(&mut conn, &art1_full).unwrap();
+    assert!(matches!(res1, InsertResult::Inserted(_)));
+
+    // Second insert with same canonical URL hash MUST return Duplicate
+    let res2 = Repository::insert_normalized_article_if_unique(&mut conn, &art1_full).unwrap();
+    assert!(matches!(res2, InsertResult::Duplicate { .. }));
+
+    // 5. FTS5 Search
+    let search_res = Repository::search_normalized_articles_fts(&conn, "Sumatra", 5).unwrap();
+    assert_eq!(search_res.len(), 1);
+    assert_eq!(search_res[0].0, "art-usgs-1");
+
+    // 6. Ingestion Run & Errors
+    let run = IngestionRun {
+        id: "run-001".into(),
+        endpoint_id: "ep-usgs-significant".into(),
+        started_at: "2026-11-09T14:00:00Z".into(),
+        completed_at: Some("2026-11-09T14:00:02Z".into()),
+        status: IngestionStatus::Success,
+        http_status_code: Some(200),
+        articles_fetched: 1,
+        articles_new: 1,
+        articles_duplicate: 0,
+        error_message: None,
+    };
+    Repository::record_ingestion_run(&conn, &run).unwrap();
+
+    let err = RetrievalError {
+        id: "err-001".into(),
+        run_id: Some("run-001".into()),
+        endpoint_id: "ep-usgs-significant".into(),
+        error_kind: ErrorKind::Http429,
+        details: "Rate limited simulation".into(),
+        occurred_at: "2026-11-09T14:00:00Z".into(),
+    };
+    Repository::record_retrieval_error(&conn, &err).unwrap();
+
+    // 7. Source Health
+    let mut health = SourceHealth::new("src-usgs");
+    health.total_requests = 10;
+    health.successful_requests = 9;
+    health.failed_requests = 1;
+    health.reliability_score = 0.95;
+    Repository::update_source_health(&conn, &health).unwrap();
+
+    let fetched_health = Repository::get_source_health(&conn, "src-usgs").unwrap().unwrap();
+    assert_eq!(fetched_health.successful_requests, 9);
+
+    // Cleanup
+    drop(conn);
+    drop(db);
     let _ = std::fs::remove_file(&db_path);
     let _ = std::fs::remove_file(db_path.with_extension("db-wal"));
     let _ = std::fs::remove_file(db_path.with_extension("db-shm"));

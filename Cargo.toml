@@ -40,3 +40,11 @@ tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
 # Asynchronous Runtime & Low-Level
 tokio = { version = "1.40", features = ["rt-multi-thread", "sync", "macros", "time"] }
 libc = "0.2"
+
+# Ingestion, Network & Safe Parsing
+quick-xml = { version = "0.37", features = ["serialize"] }
+url = { version = "2.5", features = ["serde"] }
+sha2 = "0.10"
+async-trait = "0.1"
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json"] }
+regex = "1.10"

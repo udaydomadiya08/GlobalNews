@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Global Disaster &amp; News Monitor</title>
+    <link>https://example.org/news</link>
+    <description>Authoritative global reporting</description>
+    <item>
+      <title>Volcanic Eruption Confirmed on Remote Pacific Island</title>
+      <link>https://example.org/news/volcano-2026?utm_source=rss&amp;utm_medium=feed#report</link>
+      <description>&lt;p&gt;Geologists reported a major ash plume rising to 12,000 meters. &lt;b&gt;No casualties reported.&lt;/b&gt;&lt;/p&gt;</description>
+      <pubDate>Mon, 09 Nov 2026 14:30:00 +0530</pubDate>
+      <guid isPermaLink="false">volcano-island-2026-001</guid>
+      <author>Jane Doe, Chief Geologist</author>
+      <category>Geology</category>
+      <category>Natural Disaster</category>
+    </item>
+    <item>
+      <title>Autonomous Satellite Constellation Completes Orbital Insertion</title>
+      <link>https://example.org/news/satellite-constellation?ref=rss</link>
+      <description>The international radar constellation will monitor global ice shelf dynamics.</description>
+      <pubDate>09 Nov 2026 09:00:00 GMT</pubDate>
+      <guid>https://example.org/news/satellite-constellation</guid>
+      <category>Science &amp; Space</category>
+    </item>
+  </channel>
+</rss>

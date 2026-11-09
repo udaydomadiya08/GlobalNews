@@ -1,6 +1,7 @@
 pub mod benchmarks;
 pub mod config;
 pub mod error;
+pub mod ingestion;
 pub mod state;
 
 pub use benchmarks::{BenchmarkReport, BenchmarkRunner};

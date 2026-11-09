@@ -30,10 +30,17 @@ jobs:
       - name: Install Rust Stable (pinned)
         uses: dtolnay/rust-toolchain@stable
         with:
+          toolchain: stable
           components: rustfmt, clippy
 
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2
+
+      - name: Ensure Cargo.lock Generated
+        run: |
+          if [ ! -f Cargo.lock ]; then
+            cargo generate-lockfile
+          fi
 
       - name: Format and Verify Code Formatting
         run: |
@@ -58,8 +65,8 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git checkout -B ci-results-lint
-          git add -f clippy_results.txt || true
-          git commit -m "ci: capture clippy lint results [skip ci]" || true
+          git add -f clippy_results.txt Cargo.lock || true
+          git commit -m "ci: capture clippy and lockfile [skip ci]" || true
           git push -f origin ci-results-lint || true
 
   # ---------------------------------------------------------------------------
@@ -171,6 +178,33 @@ jobs:
         shell: bash
         run: cargo audit 2>&1 | tee audit_results.txt
 
+      - name: Run Licence Compliance Audit
+        shell: bash
+        run: |
+          python3 -c "
+          import json, subprocess, sys
+          metadata = json.loads(subprocess.check_output(['cargo', 'metadata', '--format-version', '1']))
+          packages = metadata.get('packages', [])
+          allowed = ['MIT', 'Apache-2.0', 'BSD-2-Clause', 'BSD-3-Clause', 'ISC', 'CC0-1.0', 'Unicode-3.0', 'Zlib', 'OpenSSL']
+          forbidden = ['GPL', 'AGPL', 'SSPL']
+          violations = []
+          compliant = 0
+          for p in packages:
+              lic = p.get('license') or ''
+              name = p.get('name')
+              ver = p.get('version')
+              if any(f in lic for f in forbidden):
+                  violations.append(f'{name} {ver}: Forbidden {lic}')
+              elif any(a in lic for a in allowed) or lic == '':
+                  compliant += 1
+              else:
+                  violations.append(f'{name} {ver}: Unapproved {lic}')
+          print(f'Licence audit passed: {compliant} packages verified compliant.')
+          if violations:
+              print('Licence violations:', violations)
+              sys.exit(1)
+          " 2>&1 | tee licence_results.txt
+
       - name: Publish Audit Results to Branch
         if: always()
         shell: bash
@@ -178,6 +212,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git checkout -B ci-results-audit
-          git add -f audit_results.txt || true
-          git commit -m "ci: capture security audit results [skip ci]" || true
+          git add -f audit_results.txt licence_results.txt || true
+          git commit -m "ci: capture security and licence audit results [skip ci]" || true
           git push -f origin ci-results-audit || true

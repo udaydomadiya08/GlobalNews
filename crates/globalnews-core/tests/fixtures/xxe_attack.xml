@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE rss [
+  <!ENTITY xxe SYSTEM "http://127.0.0.1:8080/internal-secrets">
+]>
+<rss version="2.0">
+  <channel>
+    <title>Malicious Feed</title>
+    <item>
+      <title>&xxe;</title>
+      <link>https://example.org/attack</link>
+    </item>
+  </channel>
+</rss>

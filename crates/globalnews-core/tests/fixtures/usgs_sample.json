@@ -1,0 +1,49 @@
+{
+  "type": "FeatureCollection",
+  "metadata": {
+    "generated": 1762699200000,
+    "url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/significant_month.geojson",
+    "title": "USGS Significant Earthquakes, Past Month",
+    "status": 200,
+    "api": "1.10.3",
+    "count": 1
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "mag": 6.8,
+        "place": "124 km WSW of Honiara, Solomon Islands",
+        "time": 1762699000000,
+        "updated": 1762699500000,
+        "tz": null,
+        "url": "https://earthquake.usgs.gov/earthquakes/event/us7000sample1",
+        "detail": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/detail/us7000sample1.geojson",
+        "felt": 45,
+        "cdi": 5.2,
+        "mmi": 6.1,
+        "alert": "green",
+        "status": "reviewed",
+        "tsunami": 0,
+        "sig": 712,
+        "net": "us",
+        "code": "7000sample1",
+        "ids": ",us7000sample1,",
+        "sources": ",us,",
+        "types": ",moment-tensor,origin,phase-data,",
+        "nst": 112,
+        "dmin": 1.2,
+        "rms": 0.85,
+        "gap": 32,
+        "magType": "mww",
+        "type": "earthquake",
+        "title": "M 6.8 - 124 km WSW of Honiara, Solomon Islands"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [158.92, -9.85, 35.0]
+      },
+      "id": "us7000sample1"
+    }
+  ]
+}

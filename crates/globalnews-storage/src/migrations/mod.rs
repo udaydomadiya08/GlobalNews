@@ -8,11 +8,18 @@ pub struct Migration {
     pub sql: &'static str,
 }
 
-pub const MIGRATIONS: &[Migration] = &[Migration {
-    version: 1,
-    name: "001_initial_schema",
-    sql: include_str!("001_initial_schema.sql"),
-}];
+pub const MIGRATIONS: &[Migration] = &[
+    Migration {
+        version: 1,
+        name: "001_initial_schema",
+        sql: include_str!("001_initial_schema.sql"),
+    },
+    Migration {
+        version: 2,
+        name: "002_ingestion_pipeline",
+        sql: include_str!("002_ingestion_pipeline.sql"),
+    },
+];
 
 pub struct MigrationRunner;
 

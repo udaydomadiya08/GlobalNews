@@ -14,6 +14,9 @@ pub enum CoreError {
     #[error("Platform error: {0}")]
     Platform(#[from] PlatformError),
 
+    #[error("Ingestion pipeline error: {0}")]
+    Ingestion(#[from] crate::ingestion::IngestionError),
+
     #[error("Configuration error: {0}")]
     Config(String),
 

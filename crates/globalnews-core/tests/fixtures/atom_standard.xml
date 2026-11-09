@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>International Humanitarian Observatory</title>
+  <link href="https://example.org/humanitarian/feed.atom" rel="self"/>
+  <link href="https://example.org/humanitarian"/>
+  <updated>2026-11-09T12:00:00Z</updated>
+  <id>urn:uuid:60a76c80-d399-11d9-b93C-0003939e0af6</id>
+  <entry>
+    <title>Humanitarian Logistics Corridor Opened in Sahel Region</title>
+    <link href="https://example.org/humanitarian/reports/sahel-corridor-2026?utm_campaign=daily" rel="alternate"/>
+    <id>urn:humanitarian:report:sahel:2026</id>
+    <published>2026-11-09T11:45:00Z</published>
+    <updated>2026-11-09T12:00:00Z</updated>
+    <author>
+      <name>UN OCHA Sahel Desk</name>
+    </author>
+    <summary>&lt;div&gt;Over 450 metric tons of essential supplies began moving along the newly stabilized route.&lt;/div&gt;</summary>
+    <category term="Aid"/>
+    <category term="Sahel"/>
+  </entry>
+</feed>
