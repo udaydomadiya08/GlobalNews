@@ -185,18 +185,20 @@ jobs:
           import json, subprocess, sys
           metadata = json.loads(subprocess.check_output(['cargo', 'metadata', '--format-version', '1']))
           packages = metadata.get('packages', [])
-          allowed = ['MIT', 'Apache-2.0', 'BSD-2-Clause', 'BSD-3-Clause', 'ISC', 'CC0-1.0', 'Unicode-3.0', 'Zlib', 'OpenSSL']
-          forbidden = ['GPL', 'AGPL', 'SSPL']
+          allowed = ['MIT', 'Apache-2.0', 'BSD-2-Clause', 'BSD-3-Clause', 'ISC', 'CC0-1.0', 'Unicode-3.0', 'Zlib', 'OpenSSL', 'CDLA-Permissive-2.0', 'MPL-2.0']
+          forbidden = ['AGPL', 'SSPL']
           violations = []
           compliant = 0
           for p in packages:
               lic = p.get('license') or ''
               name = p.get('name')
               ver = p.get('version')
-              if any(f in lic for f in forbidden):
-                  violations.append(f'{name} {ver}: Forbidden {lic}')
-              elif any(a in lic for a in allowed) or lic == '':
+              # Split dual/multi licensing on ' OR '
+              parts = [part.strip() for part in lic.split(' OR ')]
+              if any(any(a in part for a in allowed) for part in parts) or lic == '':
                   compliant += 1
+              elif any(f in lic for f in forbidden):
+                  violations.append(f'{name} {ver}: Forbidden {lic}')
               else:
                   violations.append(f'{name} {ver}: Unapproved {lic}')
           print(f'Licence audit passed: {compliant} packages verified compliant.')

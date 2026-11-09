@@ -84,3 +84,25 @@ To prevent scope creep and ensure rock-solid architectural verification, the fol
 - **No Real News Scraping or Feed Crawling:** No network scrapers or live RSS parsers are loaded. Feeds are tested using deterministic JSON fixture envelopes.
 - **No 3D Globe WebGL Rendering:** Frontend Three.js / Three-Globe canvas rendering is scheduled for Phase 3. Phase 1 focuses exclusively on the Rust core, database, contracts, platform abstraction, and IPC command layer.
 - **No Heavy NLP / Embedding Models:** Tokenizers, FastText, and embedding weights are scheduled for Phase 1.2 / Phase 2. Phase 1 implements lexical FTS5 BM25 search.
+
+---
+
+## 5. Phase 1.2 Feed Ingestion & Normalization Limitations
+
+Phase 1.2 operationalizes automated feed ingestion, transport resilience, and deduplication. The following technical boundaries and constraints are documented:
+
+### 5.1 Cloudflare Bot Management & Captcha Walls
+- Certain commercial news publishers protect their RSS/Atom endpoints behind Cloudflare Turnstile, Cloudflare Bot Management, or Akamai anti-bot challenges (e.g. Al Jazeera English).
+- In compliance with strict architectural guidelines, GLOBALNEWS does not attempt headless browser scraping or captcha solving. Endpoints requiring interactive browser challenges are excluded from Tier 1 background polling and deferred to browser-based manual retrieval or direct API partnerships.
+
+### 5.2 Multi-Publisher Event Collision & Fingerprinting
+- Independent publishers reporting on the same breaking global event often use identical or near-identical headlines on the same calendar day (e.g. "Peace Talks Commence in Geneva").
+- Fingerprinting must enforce `PRIMARY KEY (fingerprint_hash, article_id)` within `article_fingerprints` rather than treating title-date hashes as globally unique. Global deduplication applies strictly to canonical URLs, while title-date deduplication applies strictly per publisher (`source_id`).
+
+### 5.3 Payload & Excerpting Limits
+- Ingestion enforces a hard 5 MB payload cap (`MAX_PAYLOAD_BYTES`). Feed endpoints that embed base64 images or massive inline media enclosures exceeding 5 MB will be aborted with `PayloadTooLarge`.
+- Text excerpts are capped at 500 characters to respect international copyright fair-use boundaries and prevent unauthorized full-text redistribution of paywalled or syndicated wire articles.
+
+### 5.4 Date Parsing Realism
+- Feed publishers frequently violate RFC 822 / RFC 2822 / RFC 3339 specifications (e.g. using non-standard timezones, truncated dates, or epoch millis).
+- GLOBALNEWS never synthesizes or guesses timestamps. If a timestamp cannot be parsed into a verified UTC representation, `published_at` remains `None` while the raw text is preserved in `raw_published_at`. Deduplication gracefully falls back to `unknown-date`.
