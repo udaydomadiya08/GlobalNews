@@ -76,3 +76,4 @@ FROM retrieval_errors
 WHERE endpoint_id = ?
 ORDER BY occurred_at DESC LIMIT 5;
 ```
+

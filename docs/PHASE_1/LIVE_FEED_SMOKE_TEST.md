@@ -64,3 +64,4 @@ While offline fixture tests guarantee deterministic reproducibility, Phase 1.2 r
 2. **SSRF Guard Precision:** The public IP range of `earthquake.usgs.gov` was verified safe and not mistakenly flagged as link-local or loopback.
 3. **Data Integrity:** All 7 parsed seismic events conformed strictly to the `NormalizedArticle` contract (`validate()` passed with 0 errors).
 4. **Idempotent Polling:** Subsequent query using the captured `Last-Modified` header produced `HTTP 304 Not Modified`, verifying conditional request efficiency.
+

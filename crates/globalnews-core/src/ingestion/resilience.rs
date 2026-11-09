@@ -62,3 +62,4 @@ impl Default for ConcurrencyLimiter {
         Self::new(4) // Conservative default: 4 concurrent fetches
     }
 }
+

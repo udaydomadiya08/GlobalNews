@@ -460,3 +460,4 @@ fn test_fts5_search_on_normalized_articles() {
     assert_eq!(matches_caldera.len(), 1);
     assert_eq!(matches_caldera[0].0, "art-1");
 }
+

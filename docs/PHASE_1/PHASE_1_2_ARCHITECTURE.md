@@ -154,3 +154,4 @@ The `ArticleNormalizer::canonicalize_url` function applies standard URL hygiene:
 - Non-blocking concurrent reads execute via `DatabaseManager::create_reader` / `with_reader`.
 - Writes are serialized through an internal `std::sync::Mutex<Connection>` via `DatabaseManager::get_writer` / `with_writer`.
 - Network IO is strictly executed outside the write lock.
+

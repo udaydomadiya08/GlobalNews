@@ -73,3 +73,4 @@ async fn test_live_usgs_earthquake_ingestion_smoke() {
     let _ = std::fs::remove_file(db_path.with_extension("db-wal"));
     let _ = std::fs::remove_file(db_path.with_extension("db-shm"));
 }
+

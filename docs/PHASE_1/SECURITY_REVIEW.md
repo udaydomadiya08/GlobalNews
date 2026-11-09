@@ -81,3 +81,4 @@ Four critical vulnerability vectors were identified, modeled, and mitigated with
 | `test_http_429_backoff_handling` | Aggressive server polling | Exponential backoff window set in health table | **PASS** |
 | `test_safe_transport_ssrf_blocking` | Loopback `127.0.0.1` and private IPs | SSRF connection rejection (`SsrfBlocked`) | **PASS** |
 | `test_canonical_url_tracking_strip` | Marketing trackers & hash pollution | Clean canonical URLs & stable hashes | **PASS** |
+

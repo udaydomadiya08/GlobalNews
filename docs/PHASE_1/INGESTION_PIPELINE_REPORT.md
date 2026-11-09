@@ -73,3 +73,4 @@ In strict adherence to project scope controls:
 - **No event clustering or scoring:** Lexical search and storage foundations only; micro/macro event aggregation is deferred to Phase 1.3.
 - **No generative AI summaries:** Excerpts are extracted directly from authoritative source metadata; no synthetic text is generated.
 - **No speculative or untested feed endpoints:** Every active endpoint is audited, probe-tested, and documented with exact licensing in `docs/PHASE_1/SOURCE_CATALOGUE.md`.
+

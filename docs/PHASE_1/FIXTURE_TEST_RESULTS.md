@@ -44,3 +44,4 @@ Every network interaction is routed through `MockHttpTransport`, allowing precis
 In addition to the 15 pipeline fixture tests, `crates/globalnews-storage/tests/storage_tests.rs` executes:
 - `test_phase_1_2_ingestion_storage_and_registry`: Full round-trip verification of `sources`, `feed_endpoints`, `feed_checkpoints`, `source_health`, `normalized_articles`, `article_fingerprints`, `ingestion_runs`, and `retrieval_errors`.
 - Validates foreign key constraints, unique constraints on `article_fingerprints(fingerprint_type, fingerprint_hash)`, and FTS5 ranking queries.
+

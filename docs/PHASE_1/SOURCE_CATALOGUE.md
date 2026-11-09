@@ -134,3 +134,4 @@ Every endpoint listed below has been verified via real HTTP probe and parser exe
 | `FullTextStored` | USGS, NASA, Government Open Data | Title, Description, Body, GeoJSON, Raw Source | Publicly distributable with attribution |
 | `MetadataAndExcerptOnly` | BBC, ReliefWeb, WHO, Reuters, AP | Title, Canonical URL, Published Date, Excerpt (≤500 chars) | Excerpt only; user click navigates to canonical web source |
 | `TitleAndUrlOnly` | Restrictive paywalled / syndication sources | Title, Canonical URL, Source ID, Timestamp | Direct link only; zero excerpt |
+
