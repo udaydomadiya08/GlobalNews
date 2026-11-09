@@ -384,7 +384,9 @@ fn test_macro_event_relationships() {
 
 #[test]
 fn test_concurrent_readers_and_single_writer() {
-    let db = DatabaseManager::new_in_memory().unwrap();
+    let db_path =
+        std::env::temp_dir().join(format!("globalnews_test_concurrent_{}.db", uuid::Uuid::new_v4()));
+    let db = DatabaseManager::open_file(&db_path).unwrap();
     let db_arc = std::sync::Arc::new(db);
 
     // Seed 1 record
@@ -446,4 +448,9 @@ fn test_concurrent_readers_and_single_writer() {
     for h in handles {
         h.join().unwrap();
     }
+
+    // Cleanup temporary files
+    let _ = std::fs::remove_file(&db_path);
+    let _ = std::fs::remove_file(db_path.with_extension("db-wal"));
+    let _ = std::fs::remove_file(db_path.with_extension("db-shm"));
 }

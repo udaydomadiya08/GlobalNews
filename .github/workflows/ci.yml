@@ -42,28 +42,12 @@ jobs:
         shell: bash
         run: cargo clippy --workspace --all-targets -- -D warnings 2>&1 | tee clippy_results.txt
 
-      - name: Publish Lint Results on Success
-        if: success()
-        shell: bash
-        run: |
-          git config --global user.name "CI Bot"
-          git config --global user.email "ci@globalnews.local"
-          git checkout -B ci-results-lint
-          git add -f clippy_results.txt
-          git commit -m "ci: clippy clean verification"
-          git push -f origin ci-results-lint || true
-
-      - name: Publish Diagnostics on Failure
-        if: failure()
-        run: |
-          cargo fmt --all -- --check > fmt_err.txt 2>&1 || true
-          cargo clippy --workspace --all-targets -- -D warnings > clippy_err.txt 2>&1 || true
-          git config --global user.name "CI Bot"
-          git config --global user.email "ci@globalnews.local"
-          git checkout -B ci-lint-debug
-          git add -f fmt_err.txt clippy_err.txt
-          git commit -m "ci: lint failure logs"
-          git push -f origin ci-lint-debug || true
+      - name: Upload Lint Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-results
+          path: clippy_results.txt
 
   # ---------------------------------------------------------------------------
   # 2. Multiplatform Native Build & Test Matrix
@@ -110,29 +94,12 @@ jobs:
         shell: bash
         run: cargo test --workspace -- --nocapture 2>&1 | tee test_results_${{ matrix.platform.slug }}.txt
 
-      - name: Publish Test Results on Success
-        if: success()
-        shell: bash
-        run: |
-          git config --global user.name "CI Bot"
-          git config --global user.email "ci@globalnews.local"
-          git checkout -B ci-results-${{ matrix.platform.slug }}
-          git add -f test_results_${{ matrix.platform.slug }}.txt
-          git commit -m "ci: test verification for ${{ matrix.platform.name }}"
-          git push -f origin ci-results-${{ matrix.platform.slug }} || true
-
-      - name: Publish Diagnostics on Failure
-        if: failure()
-        shell: bash
-        run: |
-          cargo check --workspace > check_err_${{ matrix.platform.slug }}.txt 2>&1 || true
-          cargo test --workspace -- --nocapture > test_err_${{ matrix.platform.slug }}.txt 2>&1 || true
-          git config --global user.name "CI Bot"
-          git config --global user.email "ci@globalnews.local"
-          git checkout -B ci-test-${{ matrix.platform.slug }}-debug
-          git add -f check_err_${{ matrix.platform.slug }}.txt test_err_${{ matrix.platform.slug }}.txt
-          git commit -m "ci: test failure logs for ${{ matrix.platform.name }}"
-          git push -f origin ci-test-${{ matrix.platform.slug }}-debug || true
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.platform.slug }}
+          path: test_results_${{ matrix.platform.slug }}.txt
 
   # ---------------------------------------------------------------------------
   # 3. Frontend & Tauri Shell Verification
