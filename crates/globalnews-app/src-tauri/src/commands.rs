@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use globalnews_contracts::{MacroEvent, MicroEvent};
 use globalnews_core::EngineState;
 use globalnews_storage::Repository;

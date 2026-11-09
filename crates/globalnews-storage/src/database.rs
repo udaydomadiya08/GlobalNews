@@ -19,29 +19,35 @@ impl Default for DatabaseConfig {
     }
 }
 
-const SHARED_IN_MEMORY_URI: &str = "file:globalnews_mem?mode=memory&cache=shared";
-
 pub struct DatabaseManager {
     config: DatabaseConfig,
+    memory_uri: Option<String>,
     // Dedicated mutex-guarded write connection ensuring single-writer serialization
     write_conn: Mutex<Connection>,
 }
 
 impl DatabaseManager {
     pub fn new(config: DatabaseConfig) -> Result<Self, StorageError> {
-        let mut conn = match &config.path {
+        let (mut conn, memory_uri) = match &config.path {
             Some(path) => {
                 if let Some(parent) = path.parent() {
                     std::fs::create_dir_all(parent)?;
                 }
-                Connection::open(path)?
+                (Connection::open(path)?, None)
             }
-            None => Connection::open_with_flags(
-                SHARED_IN_MEMORY_URI,
-                rusqlite::OpenFlags::SQLITE_OPEN_URI
-                    | rusqlite::OpenFlags::SQLITE_OPEN_READ_WRITE
-                    | rusqlite::OpenFlags::SQLITE_OPEN_CREATE,
-            )?,
+            None => {
+                let uri = format!(
+                    "file:mem_{}?mode=memory&cache=shared",
+                    uuid::Uuid::new_v4().simple()
+                );
+                let c = Connection::open_with_flags(
+                    &uri,
+                    rusqlite::OpenFlags::SQLITE_OPEN_URI
+                        | rusqlite::OpenFlags::SQLITE_OPEN_READ_WRITE
+                        | rusqlite::OpenFlags::SQLITE_OPEN_CREATE,
+                )?;
+                (c, Some(uri))
+            }
         };
 
         Self::configure_pragmas(&mut conn, config.busy_timeout_ms)?;
@@ -51,6 +57,7 @@ impl DatabaseManager {
 
         Ok(Self {
             config,
+            memory_uri,
             write_conn: Mutex::new(conn),
         })
     }
@@ -94,12 +101,18 @@ impl DatabaseManager {
                 rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY
                     | rusqlite::OpenFlags::SQLITE_OPEN_NO_MUTEX,
             )?,
-            None => Connection::open_with_flags(
-                SHARED_IN_MEMORY_URI,
-                rusqlite::OpenFlags::SQLITE_OPEN_URI
-                    | rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY
-                    | rusqlite::OpenFlags::SQLITE_OPEN_NO_MUTEX,
-            )?,
+            None => {
+                let uri = self
+                    .memory_uri
+                    .as_deref()
+                    .unwrap_or("file::memory:?cache=shared");
+                Connection::open_with_flags(
+                    uri,
+                    rusqlite::OpenFlags::SQLITE_OPEN_URI
+                        | rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY
+                        | rusqlite::OpenFlags::SQLITE_OPEN_NO_MUTEX,
+                )?
+            }
         };
         conn.busy_timeout(std::time::Duration::from_millis(
             self.config.busy_timeout_ms,
