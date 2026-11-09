@@ -2,7 +2,7 @@ use crate::error::StorageError;
 use crate::migrations::MigrationRunner;
 use rusqlite::Connection;
 use std::path::{Path, PathBuf};
-use std::sync::Mutex;
+use std::sync::{Mutex, MutexGuard};
 use tracing::info;
 
 pub struct DatabaseConfig {
@@ -79,6 +79,13 @@ impl DatabaseManager {
         conn.pragma_update(None, "journal_mode", "WAL")?;
         conn.pragma_update(None, "synchronous", "NORMAL")?;
         Ok(())
+    }
+
+    /// Acquires the dedicated single-writer lock and returns the guarded connection.
+    pub fn get_writer(&self) -> Result<MutexGuard<'_, Connection>, StorageError> {
+        self.write_conn
+            .lock()
+            .map_err(|_| StorageError::LockTimeout)
     }
 
     /// Executes a write operation within the single-writer lock.

@@ -57,9 +57,9 @@ impl IngestionPipeline {
         let now_str = now.to_rfc3339();
 
         // 1. Check Source Health and Backoff Window
-        let mut conn = self.db.get_writer()?;
-        let health = Repository::get_source_health(&conn, &source.id)?
-            .unwrap_or_else(|| SourceHealth::new(&source.id));
+        let health = self.db.with_reader(|conn| {
+            Repository::get_source_health(conn, &source.id)
+        })?.unwrap_or_else(|| SourceHealth::new(&source.id));
 
         if let Some(ref backoff_until) = health.backoff_until {
             if let Ok(backoff_dt) = chrono::DateTime::parse_from_rfc3339(backoff_until) {
@@ -74,8 +74,9 @@ impl IngestionPipeline {
         }
 
         // 2. Load Checkpoint for Conditional Request
-        let checkpoint = Repository::get_feed_checkpoint(&conn, &endpoint.id)?
-            .unwrap_or_default();
+        let checkpoint = self.db.with_reader(|conn| {
+            Repository::get_feed_checkpoint(conn, &endpoint.id)
+        })?.unwrap_or_default();
 
         let run_id = Uuid::new_v4().to_string();
         let mut run = IngestionRun::new(&run_id, &endpoint.id, &now_str);
@@ -92,6 +93,8 @@ impl IngestionPipeline {
 
         // 4. Execute HTTP Transport
         let response_result = transport.execute(&req).await;
+
+        let mut conn = self.db.get_writer()?;
 
         match response_result {
             // Case A: 304 Not Modified
