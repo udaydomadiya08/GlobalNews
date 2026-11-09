@@ -50,8 +50,8 @@ fn test_macro_and_micro_event_crud() {
         summary: "Maritime authorities adjust navigation routes in response to naval exercises."
             .into(),
         category_code: "04000000".into(),
-        importance,
-        confidence,
+        importance: importance.clone(),
+        confidence: confidence.clone(),
         location: loc,
         status: EventStatus::Developing,
         first_seen_at: "2026-11-09T04:00:00Z".into(),
@@ -348,8 +348,8 @@ fn test_macro_event_relationships() {
         summary: "Transmission interconnects trip automatically to protect core infrastructure."
             .into(),
         category_code: "04000000".into(),
-        importance,
-        confidence,
+        importance: importance.clone(),
+        confidence: confidence.clone(),
         location: loc,
         status: EventStatus::Confirmed,
         first_seen_at: "2026-11-09T09:00:00Z".into(),

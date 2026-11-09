@@ -74,37 +74,41 @@ pub fn handle_search_events(
         ));
     }
     let lim = limit.unwrap_or(20);
-    state.db.with_reader(|conn| {
-        let rows = Repository::search_events(conn, &query, lim)
-            .map_err(|e| CommandError::Database(e.to_string()))?;
+    state
+        .db
+        .with_reader(|conn| {
+            let rows = Repository::search_events(conn, &query, lim)?;
 
-        let results = rows
-            .into_iter()
-            .map(|(event_id, title, rank)| SearchResult {
-                event_id,
-                title,
-                rank,
-            })
-            .collect();
+            let results = rows
+                .into_iter()
+                .map(|(event_id, title, rank)| SearchResult {
+                    event_id,
+                    title,
+                    rank,
+                })
+                .collect();
 
-        Ok(results)
-    })
+            Ok(results)
+        })
+        .map_err(|e| CommandError::Database(e.to_string()))
 }
 
 pub fn handle_get_micro_event(
     state: &EngineState,
     id: String,
 ) -> Result<Option<MicroEvent>, CommandError> {
-    state.db.with_reader(|conn| {
-        Repository::get_micro_event(conn, &id).map_err(|e| CommandError::Database(e.to_string()))
-    })
+    state
+        .db
+        .with_reader(|conn| Repository::get_micro_event(conn, &id))
+        .map_err(|e| CommandError::Database(e.to_string()))
 }
 
 pub fn handle_get_macro_event(
     state: &EngineState,
     id: String,
 ) -> Result<Option<MacroEvent>, CommandError> {
-    state.db.with_reader(|conn| {
-        Repository::get_macro_event(conn, &id).map_err(|e| CommandError::Database(e.to_string()))
-    })
+    state
+        .db
+        .with_reader(|conn| Repository::get_macro_event(conn, &id))
+        .map_err(|e| CommandError::Database(e.to_string()))
 }
